@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Orders Management — Urban Rich Admin</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="images/logo.jpg" type="image/jpeg">
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="admin.js"></script>
+</head>
+<body>
+  <!-- HEADER -->
+  <header class="admin-header">
+    <div class="header-left">
+      <button class="menu-trigger-btn" onclick="openDrawer()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+      <div class="brand-logo"><img src="images/logo.jpg" alt="Urban Rich Logo"><span class="brand-name">URBAN RICH ADMIN</span></div>
+    </div>
+  </header>
+
+  <!-- DESKTOP NAV TABS -->
+  <nav class="admin-nav-tabs">
+    <a href="index.html" class="admin-nav-tab">Dashboard</a>
+    <a href="orders.html" class="admin-nav-tab active">Orders</a>
+    <a href="all-products.html" class="admin-nav-tab">All Products</a>
+    <a href="add-product.html" class="admin-nav-tab">Add Product</a>
+    <a href="users.html" class="admin-nav-tab">Users</a>
+    <a href="add-banner.html" class="admin-nav-tab">Add Banner</a>
+  </nav>
+
+  <main class="admin-container">
+    <h2 style="font-family: var(--font-heading); font-size: 1.5rem; font-weight: 700; margin-bottom: 20px;">CUSTOMER ORDERS MANAGEMENT</h2>
+
+    <div class="admin-table-wrapper">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Order ID</th>
+            <th>Customer Info</th>
+            <th>Shipping Address</th>
+            <th>Total</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="ordersBody">
+          <tr><td colspan="6" style="text-align: center; color: #999;">Loading orders...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <!-- FIXED MOBILE BOTTOM TASKBAR -->
+  <nav class="admin-mobile-taskbar">
+    <a href="index.html" class="admin-taskbar-tab">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <span>Dashboard</span>
+    </a>
+    <a href="orders.html" class="admin-taskbar-tab active">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      <span>Orders</span>
+    </a>
+    <a href="all-products.html" class="admin-taskbar-tab">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      <span>Products</span>
+    </a>
+    <a href="users.html" class="admin-taskbar-tab">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      <span>Users</span>
+    </a>
+    <button class="admin-taskbar-tab" onclick="openDrawer()">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      <span>Settings</span>
+    </button>
+  </nav>
+
+  <!-- SETTINGS DRAWER -->
+  <div class="drawer-overlay" id="adminDrawer" onclick="closeDrawer(event)">
+    <div class="drawer-left" onclick="event.stopPropagation()">
+      <div class="drawer-header"><span class="drawer-title">ADMIN SETTINGS</span><button class="menu-trigger-btn" onclick="closeDrawer()">✕</button></div>
+      <div class="drawer-body" style="display: flex; flex-direction: column; gap: 12px;">
+        <a href="add-product.html" class="btn-admin" style="text-align: center;">+ ADD NEW PRODUCT</a>
+        <a href="add-banner.html" class="btn-admin" style="text-align: center; background: #333;">MANAGE HERO BANNERS</a>
+        <button class="btn-admin" id="pushNotifyBtn" onclick="requestAdminNotificationPermission()" style="width: 100%; background: #0077b6;">ALLOW ORDER NOTIFICATIONS</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    async function loadOrders() {
+      const tbody = document.getElementById('ordersBody');
+      try {
+        const { data: orders, error } = await window.fetchAdminOrders();
+        if (error || !orders || orders.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #999;">No customer orders found.</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = orders.map(o => `
+          <tr>
+            <td><strong>${o.order_number}</strong></td>
+            <td>${o.customer_name}<br><small style="color:#666;">${o.customer_phone}</small></td>
+            <td><small>${typeof o.shipping_address === 'object' ? (o.shipping_address.address || 'Address provided') : o.shipping_address}</small></td>
+            <td><strong>₹${o.total_amount}</strong></td>
+            <td><span class="status-badge badge-placed">${o.order_status || 'PLACED'}</span></td>
+            <td>
+              <select onchange="updateOrderStatus('${o.id}', this.value)" style="padding: 4px; font-weight: 700; border-radius: 4px;">
+                <option value="PLACED" ${o.order_status === 'PLACED' ? 'selected' : ''}>Placed</option>
+                <option value="PROCESSING" ${o.order_status === 'PROCESSING' ? 'selected' : ''}>Processing</option>
+                <option value="SHIPPED" ${o.order_status === 'SHIPPED' ? 'selected' : ''}>Shipped</option>
+                <option value="DELIVERED" ${o.order_status === 'DELIVERED' ? 'selected' : ''}>Delivered</option>
+                <option value="CANCELLED" ${o.order_status === 'CANCELLED' ? 'selected' : ''}>Cancelled</option>
+              </select>
+            </td>
+          </tr>
+        `).join('');
+      } catch(e) { console.error(e); }
+    }
+
+    async function updateOrderStatus(orderId, status) {
+      const client = window.urSbClient || window.adminSupabase;
+      if (client) {
+        const { error } = await client.from('orders').update({ order_status: status }).eq('id', orderId);
+        if (error) {
+          window.adminToast('Error updating status: ' + error.message);
+        } else {
+          window.adminToast('Order status updated!');
+        }
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      loadOrders();
+      document.addEventListener('adminSupabaseReady', loadOrders);
+    });
+  </script>
+</body>
+</html>

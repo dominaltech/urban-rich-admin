@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Add New Product — Urban Rich Admin</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="images/logo.jpg" type="image/jpeg">
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="admin.js"></script>
+</head>
+<body>
+  <!-- HEADER -->
+  <header class="admin-header">
+    <div class="header-left">
+      <button class="menu-trigger-btn" onclick="openDrawer()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+      <div class="brand-logo"><img src="images/logo.jpg" alt="Urban Rich Logo"><span class="brand-name">URBAN RICH ADMIN</span></div>
+    </div>
+  </header>
+
+  <!-- DESKTOP NAV TABS -->
+  <nav class="admin-nav-tabs">
+    <a href="index.html" class="admin-nav-tab">Dashboard</a>
+    <a href="orders.html" class="admin-nav-tab">Orders</a>
+    <a href="all-products.html" class="admin-nav-tab">All Products</a>
+    <a href="add-product.html" class="admin-nav-tab active">Add Product</a>
+    <a href="users.html" class="admin-nav-tab">Users</a>
+    <a href="add-banner.html" class="admin-nav-tab">Add Banner</a>
+  </nav>
+
+  <main class="admin-container" style="max-width: 700px;">
+    <div style="background: #ffffff; padding: 32px; border-radius: var(--radius-md); border: 1px solid var(--border-light);">
+      <h2 style="font-family: var(--font-heading); font-size: 1.5rem; font-weight: 700; margin-bottom: 24px;">ADD NEW PRODUCT TO CATALOG</h2>
+      <form id="newProductForm">
+        <div class="form-group">
+          <label>Product Name *</label>
+          <input type="text" id="pName" class="form-control" required placeholder="e.g. Urban Heavyweight Oversized Tee">
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+          <div class="form-group">
+            <label>Selling Price (₹) *</label>
+            <input type="number" step="0.01" id="pPrice" class="form-control" required placeholder="999.00">
+          </div>
+          <div class="form-group">
+            <label>Original MRP (₹) *</label>
+            <input type="number" step="0.01" id="pMrp" class="form-control" required placeholder="1999.00">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Category *</label>
+          <select id="pCategory" class="form-control" required>
+            <option value="">Select Category...</option>
+            <option value="c1000000-0000-0000-0000-000000000001">Oversized</option>
+            <option value="c1000000-0000-0000-0000-000000000002">Baggy</option>
+            <option value="c1000000-0000-0000-0000-000000000003">Pants</option>
+            <option value="c1000000-0000-0000-0000-000000000004">Plain T-Shirts</option>
+            <option value="c1000000-0000-0000-0000-000000000005">Printed T-Shirts</option>
+            <option value="c1000000-0000-0000-0000-000000000006">Women</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Product Description</label>
+          <textarea id="pDesc" rows="4" class="form-control" placeholder="240 GSM bio-washed combed cotton streetwear tee..."></textarea>
+        </div>
+        <div class="form-group">
+          <label>Main Image Upload *</label>
+          <input type="file" id="pImgFile" class="form-control" accept="image/*">
+        </div>
+        <button type="submit" class="btn-admin" style="width: 100%; margin-top: 12px;">PUBLISH PRODUCT</button>
+      </form>
+    </div>
+  </main>
+
+  <!-- FIXED MOBILE BOTTOM TASKBAR -->
+  <nav class="admin-mobile-taskbar">
+    <a href="index.html" class="admin-taskbar-tab">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <span>Dashboard</span>
+    </a>
+    <a href="orders.html" class="admin-taskbar-tab">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      <span>Orders</span>
+    </a>
+    <a href="all-products.html" class="admin-taskbar-tab">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      <span>Products</span>
+    </a>
+    <a href="users.html" class="admin-taskbar-tab">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      <span>Users</span>
+    </a>
+    <button class="admin-taskbar-tab" onclick="openDrawer()">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      <span>Settings</span>
+    </button>
+  </nav>
+
+  <!-- SETTINGS DRAWER WITH FULL MENU NAVIGATION -->
+  <div class="drawer-overlay" id="adminDrawer" onclick="closeDrawer(event)">
+    <div class="drawer-left" onclick="event.stopPropagation()">
+      <div class="drawer-header"><span class="drawer-title">ADMIN NAVIGATION</span><button class="menu-trigger-btn" onclick="closeDrawer()">✕</button></div>
+      <div class="drawer-body" style="display: flex; flex-direction: column; gap: 12px;">
+        <a href="index.html" class="btn-admin" style="text-align: center; background: #333;">DASHBOARD</a>
+        <a href="orders.html" class="btn-admin" style="text-align: center; background: #333;">CUSTOMER ORDERS</a>
+        <a href="all-products.html" class="btn-admin" style="text-align: center; background: #333;">ALL PRODUCTS CATALOG</a>
+        <a href="add-product.html" class="btn-admin" style="text-align: center;">+ ADD NEW PRODUCT</a>
+        <a href="users.html" class="btn-admin" style="text-align: center; background: #333;">REGISTERED USERS</a>
+        <a href="add-banner.html" class="btn-admin" style="text-align: center; background: #333;">MANAGE HERO BANNERS</a>
+        <button class="btn-admin" id="pushNotifyBtn" onclick="requestAdminNotificationPermission()" style="width: 100%; background: #0077b6; margin-top: 12px;">ALLOW ORDER NOTIFICATIONS</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('newProductForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const name = document.getElementById('pName').value;
+      const price = parseFloat(document.getElementById('pPrice').value);
+      const mrp = parseFloat(document.getElementById('pMrp').value);
+      const category_id = document.getElementById('pCategory').value;
+      const description = document.getElementById('pDesc').value;
+
+      const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') + '-' + Math.floor(1000 + Math.random() * 9000);
+
+      const imgInput = document.getElementById('pImgFile');
+      let main_image = 'images/logo.jpg';
+
+      if (imgInput.files.length > 0) {
+        main_image = await window.uploadProductImage(imgInput);
+      }
+
+      const client = window.urSbClient || window.adminSupabase;
+      if (client) {
+        const { error } = await client.from('products').insert([{
+          name, slug, price, mrp, category_id, description, main_image, status: 'published', is_new_arrival: true
+        }]);
+
+        if (error) {
+          window.adminToast('Error creating product: ' + error.message);
+        } else {
+          window.adminToast('Product published successfully!');
+          setTimeout(() => {
+            window.location.href = 'all-products.html';
+          }, 1000);
+        }
+      }
+    });
+  </script>
+</body>
+</html>

@@ -135,7 +135,25 @@
     }
   };
 
-  // 6. FETCH ADMIN ORDERS ROUTINE
+  // 6. FETCH ADMIN CATEGORIES ROUTINE
+  window.fetchAdminCategories = async function() {
+    const client = window.urSbClient || window.adminSupabase || createAdminSupabaseClient();
+    if (!client) {
+      return { data: [], error: { message: 'Supabase client not initialized' } };
+    }
+    try {
+      const { data, error } = await client
+        .from('categories')
+        .select('*')
+        .order('display_order', { ascending: true });
+      return { data: data || [], error };
+    } catch (err) {
+      console.error('fetchAdminCategories error:', err);
+      return { data: [], error: err };
+    }
+  };
+
+  // 7. FETCH ADMIN ORDERS ROUTINE
   window.fetchAdminOrders = async function() {
     const client = window.urSbClient || window.adminSupabase || createAdminSupabaseClient();
     if (!client) {
@@ -153,23 +171,45 @@
     }
   };
 
-  // 7. TOAST UTILITY
-  window.adminToast = function(msg) {
+  // 8. FETCH PRODUCT GALLERY IMAGES
+  window.fetchProductImages = async function(productId) {
+    const client = window.urSbClient || window.adminSupabase || createAdminSupabaseClient();
+    if (!client || !productId) return { data: [], error: null };
+    try {
+      const { data, error } = await client
+        .from('product_images')
+        .select('*')
+        .eq('product_id', productId)
+        .order('display_order', { ascending: true });
+      return { data: data || [], error };
+    } catch (err) {
+      console.error('fetchProductImages error:', err);
+      return { data: [], error: err };
+    }
+  };
+
+  // 9. TOAST UTILITY
+  window.adminToast = function(msg, isError = false) {
     let container = document.getElementById('adminToastContainer');
     if (!container) {
       container = document.createElement('div');
       container.id = 'adminToastContainer';
-      container.style.cssText = 'position:fixed; top:20px; right:20px; z-index:99999; display:flex; flex-direction:column; gap:10px;';
+      container.style.cssText = 'position:fixed; top:20px; right:20px; z-index:99999; display:flex; flex-direction:column; gap:10px; max-width:380px;';
       document.body.appendChild(container);
     }
     let toast = document.createElement('div');
-    toast.style.cssText = 'background:#111; color:#fff; padding:12px 20px; border-radius:6px; font-weight:600; font-size:0.85rem; box-shadow:0 4px 12px rgba(0,0,0,0.15);';
+    const bg = isError ? '#d90429' : '#111';
+    toast.style.cssText = `background:${bg}; color:#fff; padding:12px 20px; border-radius:6px; font-weight:600; font-size:0.85rem; box-shadow:0 4px 16px rgba(0,0,0,0.2); animation:fadeIn 0.3s ease;`;
     toast.textContent = msg;
     container.appendChild(toast);
-    setTimeout(() => toast.remove(), 4000);
+    setTimeout(() => {
+      toast.style.opacity = '0';
+      toast.style.transition = 'opacity 0.3s ease';
+      setTimeout(() => toast.remove(), 300);
+    }, 4500);
   };
 
-  // 8. DRAWER CONTROLS
+  // 10. DRAWER CONTROLS
   window.openDrawer = function() {
     let drawer = document.getElementById('adminDrawer');
     if (drawer) drawer.classList.add('active');
@@ -179,35 +219,114 @@
     if (drawer) drawer.classList.remove('active');
   };
 
-  // 9. STORAGE IMAGE UPLOADER
-  window.uploadProductImage = async function(fileInput) {
-    if (!fileInput.files || fileInput.files.length === 0) return null;
-    const client = window.urSbClient || window.adminSupabase;
-    if (!client) return 'images/logo.jpg';
+  // 11. ROBUST SUPABASE STORAGE UPLOADER (SUPPORTS BOTH RAW FILE AND HTML INPUT)
+  window.uploadFileToStorage = async function(fileOrInput, bucket = 'product-images', folder = 'products') {
+    let file = null;
+    if (fileOrInput instanceof File) {
+      file = fileOrInput;
+    } else if (fileOrInput && fileOrInput.files && fileOrInput.files.length > 0) {
+      file = fileOrInput.files[0];
+    }
 
-    const file = fileInput.files[0];
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
-    const filePath = `products/${fileName}`;
+    if (!file) return null;
+
+    const client = window.urSbClient || window.adminSupabase || createAdminSupabaseClient();
+    if (!client) {
+      console.warn('Supabase client unavailable. Falling back to default asset.');
+      return 'images/logo.jpg';
+    }
+
+    // Clean file extension & safe filename
+    const originalExt = (file.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '');
+    const cleanExt = originalExt.length > 0 ? originalExt : 'jpg';
+    const timestamp = Date.now();
+    const randomStr = Math.random().toString(36).substring(2, 8);
+    const sanitizedName = file.name.replace(/[^a-zA-Z0-9_-]/g, '_').substring(0, 30);
+    const filePath = `${folder}/${timestamp}_${randomStr}_${sanitizedName}.${cleanExt}`;
 
     try {
-      const { error: uploadError } = await client.storage
-        .from('product-images')
-        .upload(filePath, file);
+      const { data, error: uploadError } = await client.storage
+        .from(bucket)
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: true,
+          contentType: file.type || 'image/jpeg'
+        });
 
       if (uploadError) {
-        console.error('Storage upload error:', uploadError);
-        return 'images/logo.jpg';
+        console.error(`Storage upload error (${bucket}):`, uploadError);
+        window.adminToast(`Storage Upload Error: ${uploadError.message || 'Check bucket & RLS settings'}`, true);
+        return null;
       }
 
-      const { data } = client.storage
-        .from('product-images')
+      const { data: publicUrlData } = client.storage
+        .from(bucket)
         .getPublicUrl(filePath);
 
-      return data.publicUrl;
+      if (publicUrlData && publicUrlData.publicUrl) {
+        return publicUrlData.publicUrl;
+      }
+      return null;
     } catch (err) {
-      console.error(err);
-      return 'images/logo.jpg';
+      console.error('Storage Exception:', err);
+      window.adminToast(`Upload failed: ${err.message || 'Network error'}`, true);
+      return null;
+    }
+  };
+
+  // Backwards compatibility alias
+  window.uploadProductImage = async function(fileInput) {
+    const url = await window.uploadFileToStorage(fileInput, 'product-images', 'products');
+    return url || 'images/logo.jpg';
+  };
+
+  // 12. MULTI-FILE UPLOADER FOR UNLIMITED GALLERY & BULK UPLOADS
+  window.uploadMultipleFiles = async function(fileList, bucket = 'product-images', folder = 'products', onProgress = null) {
+    const files = Array.from(fileList || []);
+    if (files.length === 0) return [];
+
+    const results = [];
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      if (onProgress && typeof onProgress === 'function') {
+        onProgress(i + 1, files.length, file.name);
+      }
+      const url = await window.uploadFileToStorage(file, bucket, folder);
+      results.push({
+        file: file,
+        fileName: file.name,
+        url: url,
+        success: !!url
+      });
+    }
+    return results;
+  };
+
+  // 13. SYNC / SAVE PRODUCT GALLERY IMAGES TO DATABASE
+  window.saveProductGalleryImages = async function(productId, imageUrls) {
+    const client = window.urSbClient || window.adminSupabase || createAdminSupabaseClient();
+    if (!client || !productId || !imageUrls || imageUrls.length === 0) return { count: 0 };
+
+    try {
+      const rows = imageUrls.map((url, idx) => ({
+        product_id: productId,
+        image_url: url,
+        display_order: idx + 1,
+        created_at: new Date()
+      }));
+
+      const { data, error } = await client
+        .from('product_images')
+        .insert(rows);
+
+      if (error) {
+        console.error('Error inserting product gallery images:', error);
+        return { error };
+      }
+      return { count: rows.length, data };
+    } catch (err) {
+      console.error('saveProductGalleryImages exception:', err);
+      return { error: err };
     }
   };
 

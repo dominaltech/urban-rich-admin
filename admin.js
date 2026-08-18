@@ -330,6 +330,77 @@
     }
   };
 
+  // 14. STORE DELIVERY & SHIPPING SETTINGS MANAGEMENT
+  window.fetchStoreDeliverySettings = async function() {
+    const client = window.urSbClient || window.adminSupabase || createAdminSupabaseClient();
+    if (!client) return { delivery_fee: 60, free_shipping_above: 999 };
+
+    try {
+      const { data, error } = await client
+        .from('store_settings')
+        .select('*')
+        .eq('id', 'default')
+        .maybeSingle();
+
+      if (error || !data) {
+        return { delivery_fee: 60, free_shipping_above: 999 };
+      }
+      return data;
+    } catch(err) {
+      console.error('fetchStoreDeliverySettings error:', err);
+      return { delivery_fee: 60, free_shipping_above: 999 };
+    }
+  };
+
+  window.saveStoreDeliverySettings = async function(deliveryFee, freeShippingAbove) {
+    const client = window.urSbClient || window.adminSupabase || createAdminSupabaseClient();
+    if (!client) {
+      window.adminToast('Supabase client not connected');
+      return { error: 'Not connected' };
+    }
+
+    try {
+      const fee = parseFloat(deliveryFee) || 0;
+      const threshold = parseFloat(freeShippingAbove) || 0;
+
+      const { data, error } = await client
+        .from('store_settings')
+        .upsert({
+          id: 'default',
+          delivery_fee: fee,
+          free_shipping_above: threshold,
+          updated_at: new Date()
+        }, { onConflict: 'id' });
+
+      if (error) {
+        console.error('saveStoreDeliverySettings error:', error);
+        window.adminToast('Error saving delivery charges: ' + error.message);
+        return { error };
+      }
+
+      window.adminToast(`✓ Delivery Charge set to ₹${fee} (Free above ₹${threshold}) applied store-wide!`);
+      return { success: true, data };
+    } catch(err) {
+      console.error('saveStoreDeliverySettings exception:', err);
+      window.adminToast('Error saving delivery charges: ' + err.message);
+      return { error: err };
+    }
+  };
+
+  window.initDeliverySettingsUI = async function() {
+    const feeInput = document.getElementById('settingDeliveryFee');
+    const thresholdInput = document.getElementById('settingFreeShippingAbove');
+    if (!feeInput && !thresholdInput) return;
+
+    const settings = await window.fetchStoreDeliverySettings();
+    if (feeInput && settings.delivery_fee !== undefined) {
+      feeInput.value = settings.delivery_fee;
+    }
+    if (thresholdInput && settings.free_shipping_above !== undefined) {
+      thresholdInput.value = settings.free_shipping_above;
+    }
+  };
+
   document.addEventListener('DOMContentLoaded', function() {
     if ("Notification" in window && Notification.permission === "granted") {
       const btn = document.getElementById('pushNotifyBtn');
@@ -343,6 +414,11 @@
         .then(reg => console.log('Admin SW registered:', reg))
         .catch(err => console.error('Admin SW registration failed:', err));
     }
+    window.initDeliverySettingsUI();
+  });
+
+  document.addEventListener('adminSupabaseReady', function() {
+    window.initDeliverySettingsUI();
   });
 
 })();

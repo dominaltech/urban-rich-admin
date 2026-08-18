@@ -52,6 +52,34 @@
       </div>
     </div>
 
+    <!-- GLOBAL STORE DELIVERY & SHIPPING CHARGES -->
+    <div class="analytics-card" style="margin-bottom: 24px; border: 1px solid #333; background: #161616;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 8px;">
+        <div>
+          <h3 style="font-size: 1.1rem; font-weight: 800; text-transform: uppercase; color: #fff; margin-bottom: 4px;">🚚 STORE DELIVERY CHARGES SETUP</h3>
+          <p style="font-size: 12px; color: #888; margin: 0;">Update standard shipping fees and free shipping minimum order threshold. Applies store-wide instantly.</p>
+        </div>
+        <span style="background: #222; border: 1px solid #444; padding: 4px 10px; border-radius: 3px; font-size: 11px; font-weight: 800; color: #00b4d8;">GLOBAL CONFIG</span>
+      </div>
+
+      <form id="deliverySettingsForm" onsubmit="handleDeliverySettingsSubmit(event)" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)) auto; gap: 16px; align-items: end;">
+        <div class="form-group" style="margin-bottom: 0;">
+          <label style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: #aaa; margin-bottom: 6px; display: block;">Standard Delivery Fee (₹)</label>
+          <input type="number" id="settingDeliveryFee" class="form-control" style="background: #0d0d0d; border-color: #333; color: #fff; font-weight: 700; font-size: 15px;" min="0" step="1" required placeholder="60">
+        </div>
+        <div class="form-group" style="margin-bottom: 0;">
+          <label style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: #aaa; margin-bottom: 6px; display: block;">Free Shipping Threshold (₹)</label>
+          <input type="number" id="settingFreeShippingAbove" class="form-control" style="background: #0d0d0d; border-color: #333; color: #fff; font-weight: 700; font-size: 15px;" min="0" step="1" required placeholder="999">
+        </div>
+        <div>
+          <button type="submit" id="saveDeliveryBtn" class="btn-admin" style="background: var(--accent-green); white-space: nowrap; height: 44px; display: flex; align-items: center; gap: 8px; font-weight: 800; width: 100%;">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            SAVE & APPLY TO STORE
+          </button>
+        </div>
+      </form>
+    </div>
+
     <!-- QUICK ACTIONS -->
     <div style="display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap;">
       <a href="bulk-upload.html" class="btn-admin" style="background: var(--accent-red); flex: 1;">⚡ BULK PRODUCT UPLOAD</a>
@@ -139,14 +167,28 @@
         <a href="all-products.html" class="btn-admin" style="text-align: center; background: #333;">ALL PRODUCTS CATALOG</a>
         <a href="add-product.html" class="btn-admin" style="text-align: center; background: #333;">+ ADD NEW PRODUCT</a>
         <a href="bulk-upload.html" class="btn-admin" style="text-align: center; background: var(--accent-red);">⚡ BULK PRODUCT UPLOAD</a>
+        <a href="add-banner.html" class="btn-admin" style="text-align: center; background: #333;">HERO BANNERS</a>
         <a href="users.html" class="btn-admin" style="text-align: center; background: #333;">REGISTERED USERS</a>
-        <a href="add-banner.html" class="btn-admin" style="text-align: center; background: #333;">MANAGE HERO BANNERS</a>
         <button class="btn-admin" id="pushNotifyBtn" onclick="requestAdminNotificationPermission()" style="width: 100%; background: #0077b6; margin-top: 12px;">ALLOW ORDER NOTIFICATIONS</button>
+        <button class="btn-admin" onclick="logoutAdmin()" style="width: 100%; background: #111; border: 1px solid #444; margin-top: 6px;">LOGOUT ADMIN</button>
       </div>
     </div>
   </div>
 
   <script>
+    async function handleDeliverySettingsSubmit(e) {
+      e.preventDefault();
+      const fee = document.getElementById('settingDeliveryFee').value;
+      const threshold = document.getElementById('settingFreeShippingAbove').value;
+      const btn = document.getElementById('saveDeliveryBtn');
+      btn.disabled = true;
+      btn.textContent = 'SAVING...';
+
+      await window.saveStoreDeliverySettings(fee, threshold);
+      btn.disabled = false;
+      btn.innerHTML = `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> SAVE & APPLY TO STORE`;
+    }
+
     async function loadDashboardMetrics() {
       const ordersTbody = document.getElementById('recentOrdersBody');
       try {

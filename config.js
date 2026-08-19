@@ -11,7 +11,7 @@ window.UR_CONFIG = {
   CASHFREE_ENV: "PRODUCTION",
 
   // Web Push Notifications VAPID Keys
-  VAPID_SUBJECT: "mailto:urbanrich.bijapur@gmail.com",
+  VAPID_SUBJECT: "mailto:support@urbanrichshop.com",
   VAPID_PUBLIC_KEY: "BLAiHhe09D65RzlO2uYBZlskrAI7M3Xg4Bu5vHN4jLjlP6Ss5aEvViiTwOPgWLQqbAn27_ATJtaOmlreHSjdFTc",
   VAPID_PRIVATE_KEY: "LjCWxk2jZ7GDuOeKB7c98keCK2HmyROBzK8h99uQz84"
 };

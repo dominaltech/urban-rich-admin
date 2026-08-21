@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>All Products & Gallery Manager — Urban Rich Admin</title>
+  <title>All Products & Inventory — Urban Rich Admin</title>
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="images/logo.jpg" type="image/jpeg">
   <link rel="stylesheet" href="styles.css">
@@ -23,6 +23,7 @@
       opacity: 0;
       visibility: hidden;
       transition: all 0.3s ease;
+      padding: 16px;
     }
     .modal-overlay.active {
       opacity: 1;
@@ -32,7 +33,7 @@
       background: #ffffff;
       padding: 32px;
       border-radius: 8px;
-      width: 92%;
+      width: 100%;
       max-width: 680px;
       max-height: 90vh;
       overflow-y: auto;
@@ -47,6 +48,10 @@
       <button class="menu-trigger-btn" onclick="openDrawer()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
       <div class="brand-logo"><img src="images/logo.jpg" alt="Urban Rich Logo"><span class="brand-name">URBAN RICH ADMIN</span></div>
     </div>
+    <div style="display:flex; gap:10px;">
+      <a href="categories.html" class="btn-admin" style="font-size:0.75rem; padding:6px 12px; background:#333;">+ CATEGORY</a>
+      <a href="sizes.html" class="btn-admin" style="font-size:0.75rem; padding:6px 12px; background:#333;">SIZES HUB</a>
+    </div>
   </header>
 
   <!-- DESKTOP NAV TABS -->
@@ -54,21 +59,23 @@
     <a href="index.html" class="admin-nav-tab">Dashboard</a>
     <a href="orders.html" class="admin-nav-tab">Orders</a>
     <a href="all-products.html" class="admin-nav-tab active">All Products</a>
-    <a href="add-product.html" class="admin-nav-tab">Add Product</a>
+    <a href="categories.html" class="admin-nav-tab">Categories</a>
+    <a href="sizes.html" class="admin-nav-tab">Sizes & Stock</a>
+    <a href="add-product.html" class="admin-nav-tab">+ Add Product</a>
     <a href="bulk-upload.html" class="admin-nav-tab bulk-highlight">⚡ Bulk Upload</a>
+    <a href="add-banner.html" class="admin-nav-tab">Hero Banners</a>
     <a href="users.html" class="admin-nav-tab">Users</a>
-    <a href="add-banner.html" class="admin-nav-tab">Add Banner</a>
   </nav>
 
   <main class="admin-container">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
       <div>
         <h2 style="font-family: var(--font-heading); font-size: 1.5rem; font-weight: 800;">INVENTORY CATALOG & GALLERY MANAGEMENT</h2>
-        <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;">Manage single product details, main images, and multi-image sliders.</p>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;">Manage single product details, sizes & stock availability, main images, and multi-image sliders.</p>
       </div>
       <div style="display: flex; gap: 10px;">
         <a href="bulk-upload.html" class="btn-admin" style="background: var(--accent-red);">⚡ BULK UPLOAD</a>
-        <a href="add-product.html" class="btn-admin">+ ADD PRODUCT</a>
+        <a href="add-product.html" class="btn-admin btn-admin-success">+ ADD PRODUCT</a>
       </div>
     </div>
 
@@ -86,7 +93,7 @@
           </tr>
         </thead>
         <tbody id="inventoryBody">
-          <tr><td colspan="7" style="text-align: center; color: #999;">Loading products and galleries...</td></tr>
+          <tr><td colspan="7" style="text-align: center; color: #999; padding:40px;">Loading products and inventory...</td></tr>
         </tbody>
       </table>
     </div>
@@ -96,7 +103,7 @@
   <div class="modal-overlay" id="editModal">
     <div class="modal-card">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border-light); padding-bottom: 12px;">
-        <h3 style="font-family: var(--font-heading); font-size: 1.25rem; font-weight: 800;">EDIT PRODUCT & GALLERY IMAGES</h3>
+        <h3 style="font-family: var(--font-heading); font-size: 1.25rem; font-weight: 800;">EDIT PRODUCT, SIZES & GALLERY</h3>
         <button onclick="closeEditModal()" style="background: none; border: none; font-size: 1.2rem; cursor: pointer; font-weight: 700;">✕</button>
       </div>
 
@@ -119,18 +126,47 @@
           </div>
         </div>
 
-        <div class="form-group">
-          <label>Status *</label>
-          <select id="editProdStatus" class="form-control">
-            <option value="published">Published</option>
-            <option value="draft">Draft</option>
-            <option value="archived">Archived</option>
-          </select>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+          <div class="form-group">
+            <label>Category *</label>
+            <select id="editProdCategory" class="form-control" required>
+              <option value="">Loading categories...</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Status *</label>
+            <select id="editProdStatus" class="form-control">
+              <option value="published">Published</option>
+              <option value="draft">Draft</option>
+              <option value="archived">Archived</option>
+            </select>
+          </div>
         </div>
 
         <div class="form-group">
           <label>Description</label>
           <textarea id="editProdDesc" rows="3" class="form-control"></textarea>
+        </div>
+
+        <!-- SIZES & STOCK AVAILABILITY SELECTOR -->
+        <div class="form-group" style="background: #fafbfc; border: 1px solid var(--border-light); padding: 16px; border-radius: 4px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <label style="margin-bottom:0;">Size Availability & Stock Status</label>
+            <span style="font-size:0.72rem; color:var(--text-muted);">Click box to toggle status</span>
+          </div>
+
+          <div class="size-mode-tabs">
+            <button type="button" class="size-mode-btn active" id="editModeAlphaBtn" onclick="switchEditSizeMode('alpha')">Alpha (S, M, L...)</button>
+            <button type="button" class="size-mode-btn" id="editModeNumericBtn" onclick="switchEditSizeMode('numeric')">Numeric (28, 30, 32...)</button>
+            <button type="button" class="size-mode-btn" id="editModeBothBtn" onclick="switchEditSizeMode('both')">All / Custom</button>
+          </div>
+
+          <div id="editProductSizeGrid" class="size-box-grid"></div>
+
+          <div class="custom-size-row">
+            <input type="text" id="editCustomSizeInput" class="form-control" placeholder="Add custom size (e.g. 44, 4XL)" style="font-size:0.8rem; padding:7px 10px; text-transform:uppercase;">
+            <button type="button" class="btn-admin" style="padding:6px 12px; font-size:0.75rem;" onclick="addEditCustomSizeTag()">+ ADD</button>
+          </div>
         </div>
 
         <!-- 1. MAIN COVER IMAGE -->
@@ -152,20 +188,21 @@
             <span id="existingGalleryCountBadge" style="font-size: 0.75rem; color: var(--accent-blue); font-weight: 700;">0 Images</span>
           </label>
           <div id="existingGalleryList" class="gallery-preview-container" style="margin-top: 10px;">
-            <span style="font-size: 0.8rem; color: #999;">No additional gallery images yet.</span>
+            <span style="font-size: 0.8rem; color: #999;">No additional gallery images for this product yet.</span>
           </div>
         </div>
 
         <!-- 3. ADD NEW GALLERY IMAGES -->
         <div class="form-group" style="background: #fafbfc; border: 1px solid var(--border-light); padding: 14px; border-radius: 4px;">
-          <label>Add More Gallery Images (Unlimited)</label>
+          <label>Upload More Gallery Images</label>
           <input type="file" id="editNewGalleryFiles" multiple accept="image/*" class="form-control" onchange="handleEditNewGalleryFiles(this)">
           <div id="editStagedGalleryPreview" class="gallery-preview-container" style="margin-top: 10px;"></div>
         </div>
 
-        <button type="submit" id="saveChangesBtn" class="btn-admin" style="width: 100%; padding: 12px; font-size: 0.95rem;">
-          SAVE PRODUCT & UPDATE GALLERY
-        </button>
+        <div style="display: flex; gap: 12px; margin-top: 24px;">
+          <button type="button" class="btn-admin" onclick="closeEditModal()" style="flex: 1; background: #666;">CANCEL</button>
+          <button type="submit" id="saveChangesBtn" class="btn-admin btn-admin-success" style="flex: 2;">SAVE CHANGES</button>
+        </div>
       </form>
     </div>
   </div>
@@ -184,13 +221,13 @@
       <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
       <span>Products</span>
     </a>
-    <a href="bulk-upload.html" class="admin-taskbar-tab">
-      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-      <span>Bulk</span>
+    <a href="categories.html" class="admin-taskbar-tab">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+      <span>Categories</span>
     </a>
-    <a href="users.html" class="admin-taskbar-tab">
-      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
-      <span>Users</span>
+    <a href="sizes.html" class="admin-taskbar-tab">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+      <span>Sizes</span>
     </a>
     <button class="admin-taskbar-tab" onclick="openDrawer()">
       <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
@@ -201,15 +238,17 @@
   <!-- SETTINGS DRAWER -->
   <div class="drawer-overlay" id="adminDrawer" onclick="closeDrawer(event)">
     <div class="drawer-left" onclick="event.stopPropagation()">
-      <div class="drawer-header"><span class="drawer-title">ADMIN NAVIGATION</span><button class="menu-trigger-btn" onclick="closeDrawer()">✕</button></div>
+      <div class="drawer-header"><span class="drawer-title">ADMIN NAVIGATION</span><button class="menu-trigger-btn" onclick="closeDrawer()" style="color:#000;">✕</button></div>
       <div class="drawer-body" style="display: flex; flex-direction: column; gap: 12px;">
         <a href="index.html" class="btn-admin" style="text-align: center; background: #333;">DASHBOARD</a>
         <a href="orders.html" class="btn-admin" style="text-align: center; background: #333;">CUSTOMER ORDERS</a>
-        <a href="all-products.html" class="btn-admin" style="text-align: center;">ALL PRODUCTS CATALOG</a>
+        <a href="all-products.html" class="btn-admin" style="text-align: center; background: var(--accent-blue);">ALL PRODUCTS CATALOG</a>
+        <a href="categories.html" class="btn-admin" style="text-align: center; background: #333;">MANAGE CATEGORIES</a>
+        <a href="sizes.html" class="btn-admin" style="text-align: center; background: #333;">MANAGE SIZES & STOCK</a>
         <a href="add-product.html" class="btn-admin" style="text-align: center; background: #333;">+ ADD NEW PRODUCT</a>
         <a href="bulk-upload.html" class="btn-admin" style="text-align: center; background: var(--accent-red);">⚡ BULK PRODUCT UPLOAD</a>
-        <a href="users.html" class="btn-admin" style="text-align: center; background: #333;">REGISTERED USERS</a>
         <a href="add-banner.html" class="btn-admin" style="text-align: center; background: #333;">MANAGE HERO BANNERS</a>
+        <a href="users.html" class="btn-admin" style="text-align: center; background: #333;">REGISTERED USERS</a>
         <button class="btn-admin" id="pushNotifyBtn" onclick="requestAdminNotificationPermission()" style="width: 100%; background: #0077b6; margin-top: 12px;">ALLOW ORDER NOTIFICATIONS</button>
       </div>
     </div>
@@ -219,63 +258,60 @@
     let allProducts = [];
     let currentEditGallery = [];
     let editStagedNewFiles = [];
+    let adminCategories = [];
+    let editProductSizesState = {};
+    let editSizeMode = 'alpha';
+
+    function openDrawer() { document.getElementById('adminDrawer').classList.add('active'); }
+    function closeDrawer(e) { if(e) e.stopPropagation(); document.getElementById('adminDrawer').classList.remove('active'); }
 
     async function loadInventory() {
       const tbody = document.getElementById('inventoryBody');
       try {
-        const { data: products, error } = await window.fetchAdminProducts();
-        if (error && (!products || products.length === 0)) {
-          tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: red;">Error loading products: ${error.message || 'Unknown error'}</td></tr>`;
+        const { data: prods, error } = await window.fetchAdminProducts();
+        if (error || !prods || prods.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #999; padding: 40px;">No products found in catalog.</td></tr>';
           return;
         }
 
-        allProducts = products || [];
+        allProducts = prods;
+        tbody.innerHTML = prods.map(p => `
+          <tr>
+            <td>
+              <img src="${p.main_image || 'images/logo.jpg'}" alt="${p.name}" style="width: 50px; height: 65px; object-fit: cover; border-radius: 4px; border: 1px solid #e0e0e0;">
+            </td>
+            <td>
+              <strong>${p.name}</strong>
+              <div style="font-size: 0.75rem; color: #888;">${p.slug || ''}</div>
+            </td>
+            <td><strong>₹${p.price}</strong></td>
+            <td><span style="text-decoration: line-through; color: #999;">₹${p.mrp}</span></td>
+            <td>
+              <span class="status-badge" style="background:#f1f3f5; color:#333; font-weight:700;">
+                📸 ${p.product_images ? p.product_images.length : 0} shots
+              </span>
+            </td>
+            <td>
+              <span class="status-badge ${p.status === 'published' ? 'badge-delivered' : 'badge-cancelled'}">
+                ${p.status || 'published'}
+              </span>
+            </td>
+            <td>
+              <button class="btn-admin" style="padding: 6px 12px; font-size: 0.75rem; background:#333;" onclick="openEditModal('${p.id}')">Edit Product & Sizes</button>
+              <button class="btn-admin btn-admin-danger" style="padding: 6px 12px; font-size: 0.75rem;" onclick="deleteProduct('${p.id}')">Delete</button>
+            </td>
+          </tr>
+        `).join('');
 
-        if (allProducts.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #999;">No products found in inventory.</td></tr>';
-          return;
+        // Populate category dropdown for edit modal
+        const { data: categories } = await window.fetchAdminCategories(true);
+        adminCategories = categories || [];
+        const catSelect = document.getElementById('editProdCategory');
+        if (catSelect && adminCategories.length > 0) {
+          catSelect.innerHTML = adminCategories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
         }
-
-        // Fetch gallery counts for all products
-        const client = window.urSbClient || window.adminSupabase;
-        let galleryCountMap = {};
-        if (client) {
-          const { data: imgRows } = await client.from('product_images').select('product_id');
-          if (imgRows) {
-            imgRows.forEach(r => {
-              galleryCountMap[r.product_id] = (galleryCountMap[r.product_id] || 0) + 1;
-            });
-          }
-        }
-
-        tbody.innerHTML = allProducts.map(p => {
-          const galleryCount = galleryCountMap[p.id] || 0;
-          return `
-            <tr>
-              <td><img src="${p.main_image || 'images/logo.jpg'}" style="width: 48px; height: 60px; object-fit: cover; border-radius: 4px; border: 1px solid #ddd;"></td>
-              <td>
-                <strong>${p.name}</strong>
-                <br><small style="color:#888;">ID: ${p.id.substring(0,8)}...</small>
-              </td>
-              <td><strong>₹${p.price}</strong></td>
-              <td>${p.mrp ? '₹' + p.mrp : '-'}</td>
-              <td>
-                <span class="status-badge" style="background: ${galleryCount > 0 ? '#e3f2fd' : '#f5f5f5'}; color: ${galleryCount > 0 ? '#0d47a1' : '#777'};">
-                  📷 1 Cover + ${galleryCount} Extra
-                </span>
-              </td>
-              <td><span class="status-badge ${p.status === 'published' ? 'badge-delivered' : 'badge-cancelled'}">${p.status}</span></td>
-              <td>
-                <div style="display: flex; gap: 6px;">
-                  <button onclick="openEditModal('${p.id}')" style="background: #111; color: #fff; border: none; padding: 6px 12px; border-radius: 4px; font-weight: 700; cursor: pointer; font-size: 0.75rem;">EDIT</button>
-                  <button onclick="deleteProduct('${p.id}')" style="background: var(--accent-red); color: #fff; border: none; padding: 6px 12px; border-radius: 4px; font-weight: 700; cursor: pointer; font-size: 0.75rem;">DELETE</button>
-                </div>
-              </td>
-            </tr>
-          `;
-        }).join('');
-      } catch(e) { 
-        console.error(e); 
+      } catch(e) {
+        console.error(e);
       }
     }
 
@@ -289,18 +325,99 @@
       document.getElementById('editProdMrp').value = p.mrp || '';
       document.getElementById('editProdStatus').value = p.status || 'published';
       document.getElementById('editProdDesc').value = p.description || '';
+      if (document.getElementById('editProdCategory')) {
+        document.getElementById('editProdCategory').value = p.category_id || '';
+      }
       document.getElementById('editCurrentMainImg').src = p.main_image || 'images/logo.jpg';
       document.getElementById('editProdImgFile').value = '';
       document.getElementById('editNewGalleryFiles').value = '';
       editStagedNewFiles = [];
       renderEditStagedPreviews();
 
-      // Fetch existing gallery images for this product
+      // Fetch existing gallery images
       const { data: galleryImages } = await window.fetchProductImages(p.id);
       currentEditGallery = galleryImages || [];
       renderExistingGalleryList();
 
+      // Fetch existing variants / sizes
+      const client = window.urSbClient || window.adminSupabase;
+      editProductSizesState = {};
+      
+      // Load master presets
+      const { data: presets } = await window.fetchAdminSizePresets();
+      (presets || []).forEach(pr => {
+        editProductSizesState[pr.size_label] = {
+          status: 'unselected',
+          type: pr.type
+        };
+      });
+
+      if (client) {
+        const { data: variants } = await client.from('product_variants').select('*').eq('product_id', p.id);
+        if (variants && variants.length > 0) {
+          variants.forEach(v => {
+            const isOut = v.is_in_stock === false || v.stock_quantity === 0;
+            editProductSizesState[v.size] = {
+              status: isOut ? 'out-of-stock' : 'in-stock',
+              type: /^\d+$/.test(v.size) ? 'numeric' : 'alpha',
+              variant_id: v.id
+            };
+          });
+        }
+      }
+
+      renderEditSizeBoxes();
       document.getElementById('editModal').classList.add('active');
+    }
+
+    function switchEditSizeMode(mode) {
+      editSizeMode = mode;
+      document.getElementById('editModeAlphaBtn').classList.toggle('active', mode === 'alpha');
+      document.getElementById('editModeNumericBtn').classList.toggle('active', mode === 'numeric');
+      document.getElementById('editModeBothBtn').classList.toggle('active', mode === 'both');
+      renderEditSizeBoxes();
+    }
+
+    function renderEditSizeBoxes() {
+      const container = document.getElementById('editProductSizeGrid');
+      container.innerHTML = '';
+
+      const keys = Object.keys(editProductSizesState);
+      const filteredKeys = keys.filter(label => {
+        const item = editProductSizesState[label];
+        if (editSizeMode === 'both') return true;
+        if (editSizeMode === 'alpha') return item.type === 'alpha' || item.type === 'custom';
+        if (editSizeMode === 'numeric') return item.type === 'numeric' || item.type === 'custom';
+        return true;
+      });
+
+      filteredKeys.forEach(label => {
+        const item = editProductSizesState[label];
+        const box = document.createElement('div');
+        box.className = `size-chip-box ${item.status}`;
+        box.textContent = label;
+        box.title = item.status === 'in-stock' ? 'In-Stock (Click to mark Out of Stock)' : (item.status === 'out-of-stock' ? 'Out-of-Stock (Click to disable)' : 'Click to enable');
+        box.onclick = () => {
+          if (item.status === 'in-stock') item.status = 'out-of-stock';
+          else if (item.status === 'out-of-stock') item.status = 'unselected';
+          else item.status = 'in-stock';
+          renderEditSizeBoxes();
+        };
+        container.appendChild(box);
+      });
+    }
+
+    function addEditCustomSizeTag() {
+      const input = document.getElementById('editCustomSizeInput');
+      const label = input.value.trim().toUpperCase();
+      if (!label) return;
+      if (!editProductSizesState[label]) {
+        editProductSizesState[label] = { status: 'in-stock', type: 'custom' };
+      } else {
+        editProductSizesState[label].status = 'in-stock';
+      }
+      input.value = '';
+      renderEditSizeBoxes();
     }
 
     function renderExistingGalleryList() {
@@ -339,9 +456,7 @@
 
     function handleEditNewGalleryFiles(input) {
       if (!input.files || input.files.length === 0) return;
-      Array.from(input.files).forEach(f => {
-        editStagedNewFiles.push(f);
-      });
+      Array.from(input.files).forEach(f => { editStagedNewFiles.push(f); });
       input.value = '';
       renderEditStagedPreviews();
     }
@@ -361,9 +476,6 @@
           <span class="gallery-order-badge" style="background:#2b9348;">+New</span>
           <button type="button" class="gallery-remove-btn" onclick="removeEditStagedItem(${idx})">✕</button>
           <img src="${URL.createObjectURL(file)}" alt="New Gallery">
-          <span style="font-size: 0.65rem; color: #555; margin-top: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100px;">
-            ${file.name}
-          </span>
         `;
         container.appendChild(card);
       });
@@ -386,9 +498,11 @@
         const mrp = parseFloat(document.getElementById('editProdMrp').value);
         const status = document.getElementById('editProdStatus').value;
         const description = document.getElementById('editProdDesc').value.trim();
+        const category_id = document.getElementById('editProdCategory') ? document.getElementById('editProdCategory').value : null;
 
         const fileInput = document.getElementById('editProdImgFile');
         let updatePayload = { name, price, mrp, status, description, updated_at: new Date() };
+        if (category_id) updatePayload.category_id = category_id;
 
         // 1. Upload new cover image if provided
         if (fileInput.files && fileInput.files.length > 0) {
@@ -400,7 +514,7 @@
         if (!client) {
           window.adminToast('Supabase client error', true);
           saveBtn.disabled = false;
-          saveBtn.textContent = 'SAVE PRODUCT & UPDATE GALLERY';
+          saveBtn.textContent = 'SAVE CHANGES';
           return;
         }
 
@@ -408,13 +522,12 @@
         if (updateError) {
           window.adminToast('Error updating product: ' + updateError.message, true);
           saveBtn.disabled = false;
-          saveBtn.textContent = 'SAVE PRODUCT & UPDATE GALLERY';
+          saveBtn.textContent = 'SAVE CHANGES';
           return;
         }
 
         // 2. Upload newly staged gallery images
         if (editStagedNewFiles.length > 0) {
-          saveBtn.textContent = `UPLOADING ${editStagedNewFiles.length} NEW GALLERY IMAGES...`;
           const results = await window.uploadMultipleFiles(editStagedNewFiles, 'product-images', 'products');
           const successfulUrls = results.filter(r => r.success && r.url).map(r => r.url);
           if (successfulUrls.length > 0) {
@@ -422,7 +535,25 @@
           }
         }
 
-        window.adminToast('Product and gallery updated successfully!');
+        // 3. Update size variants and availability in product_variants
+        const activeSizes = Object.keys(editProductSizesState).filter(k => editProductSizesState[k].status !== 'unselected');
+        if (activeSizes.length > 0) {
+          // Delete old variants and re-insert updated ones
+          await client.from('product_variants').delete().eq('product_id', id);
+          const newVariants = activeSizes.map(size => {
+            const isInStock = editProductSizesState[size].status === 'in-stock';
+            return {
+              product_id: id,
+              size: size,
+              stock_quantity: isInStock ? 25 : 0,
+              is_in_stock: isInStock,
+              sku: `UR-${id.substring(0, 8).toUpperCase()}-${size}`
+            };
+          });
+          await client.from('product_variants').insert(newVariants);
+        }
+
+        window.adminToast('Product details, sizes, and gallery updated successfully!');
         closeEditModal();
         loadInventory();
 
@@ -431,7 +562,7 @@
         window.adminToast('Error: ' + err.message, true);
       } finally {
         saveBtn.disabled = false;
-        saveBtn.textContent = 'SAVE PRODUCT & UPDATE GALLERY';
+        saveBtn.textContent = 'SAVE CHANGES';
       }
     });
 

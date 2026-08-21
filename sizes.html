@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manage Sizes & Presets — Urban Rich Admin</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="admin.js"></script>
+</head>
+<body>
+
+  <!-- ADMIN HEADER -->
+  <header class="admin-header">
+    <div class="header-left">
+      <button class="menu-trigger-btn" onclick="openDrawer()" aria-label="Open Navigation">
+        <svg viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <div class="brand-logo">
+        <img src="images/logo.jpg" alt="Urban Rich Logo" style="height:32px;width:auto;object-fit:contain;">
+        <span class="brand-name">URBAN RICH</span>
+      </div>
+    </div>
+    <div style="display:flex; gap:10px;">
+      <a href="index.html" class="btn-admin" style="font-size:0.75rem; padding:6px 12px; background:#333;">DASHBOARD</a>
+      <a href="add-product.html" class="btn-admin" style="font-size:0.75rem; padding:6px 12px; background:var(--accent-red);">+ ADD PRODUCT</a>
+    </div>
+  </header>
+
+  <!-- DESKTOP NAV TABS -->
+  <nav class="admin-nav-tabs">
+    <a href="index.html" class="admin-nav-tab">Dashboard</a>
+    <a href="orders.html" class="admin-nav-tab">Orders</a>
+    <a href="all-products.html" class="admin-nav-tab">Products</a>
+    <a href="categories.html" class="admin-nav-tab">Categories</a>
+    <a href="sizes.html" class="admin-nav-tab active">Sizes & Stock</a>
+    <a href="add-product.html" class="admin-nav-tab">+ Add Product</a>
+    <a href="bulk-upload.html" class="admin-nav-tab bulk-highlight">⚡ Bulk Upload</a>
+    <a href="add-banner.html" class="admin-nav-tab">Hero Banners</a>
+    <a href="users.html" class="admin-nav-tab">Users</a>
+  </nav>
+
+  <main class="admin-container">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:12px;">
+      <div>
+        <h1 style="font-size: 1.5rem; font-weight: 900; letter-spacing: -0.5px;">MASTER SIZES & PRESETS</h1>
+        <p style="font-size: 0.85rem; color: var(--text-muted);">Manage universal size presets for Alpha (S, M, L...) and Numeric (28, 30, 32...) apparel.</p>
+      </div>
+    </div>
+
+    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap:24px;">
+      
+      <!-- 1. ALPHA SIZES CARD -->
+      <div class="stat-card" style="padding:24px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+          <div>
+            <h2 style="font-size:1.1rem; font-weight:900;">Alpha Sizes (Tees, Hoodies, Oversized)</h2>
+            <p style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">Standard letter sizes for streetwear & upperwear</p>
+          </div>
+          <span class="status-badge badge-placed" id="alphaCount">7 Active</span>
+        </div>
+
+        <div id="alphaSizesGrid" class="size-box-grid" style="margin-bottom:20px;">
+          <div style="color:#999; font-size:0.85rem;">Loading alpha sizes...</div>
+        </div>
+
+        <form onsubmit="handleAddPreset(event, 'alpha')" style="display:flex; gap:8px;">
+          <input type="text" id="newAlphaInput" class="form-control" placeholder="Add size (e.g. 4XL, OS)" style="text-transform:uppercase;" required>
+          <button type="submit" class="btn-admin btn-admin-success" style="white-space:nowrap;">+ ADD</button>
+        </form>
+      </div>
+
+      <!-- 2. NUMERIC SIZES CARD -->
+      <div class="stat-card" style="padding:24px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+          <div>
+            <h2 style="font-size:1.1rem; font-weight:900;">Numeric Sizes (Jeans, Pants, Waist)</h2>
+            <p style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">Number sizes for trousers, cargos & linen pants</p>
+          </div>
+          <span class="status-badge badge-placed" id="numericCount">8 Active</span>
+        </div>
+
+        <div id="numericSizesGrid" class="size-box-grid" style="margin-bottom:20px;">
+          <div style="color:#999; font-size:0.85rem;">Loading numeric sizes...</div>
+        </div>
+
+        <form onsubmit="handleAddPreset(event, 'numeric')" style="display:flex; gap:8px;">
+          <input type="text" id="newNumericInput" class="form-control" placeholder="Add size (e.g. 44, 46)" style="text-transform:uppercase;" required>
+          <button type="submit" class="btn-admin btn-admin-success" style="white-space:nowrap;">+ ADD</button>
+        </form>
+      </div>
+
+    </div>
+
+    <!-- INSTRUCTIONS CARD -->
+    <div style="background:#fff; border:1px solid var(--border-light); border-radius:var(--radius-md); padding:20px; margin-top:24px;">
+      <h3 style="font-size:0.95rem; font-weight:800; margin-bottom:8px;">💡 How Size Availability & Toggles Work:</h3>
+      <ul style="font-size:0.85rem; color:var(--text-muted); line-height:1.6; padding-left:20px;">
+        <li>When creating or editing any product on <strong>Add Product</strong>, the active sizes above will be available to select.</li>
+        <li>On the product form, clicking any size box toggles it between <strong>In-Stock (Active)</strong> and <strong>Out-of-Stock (Red Diagonal Strike-Through)</strong>.</li>
+        <li>Out-of-stock sizes show with the red cross on the customer website and cannot be ordered until marked back in stock.</li>
+      </ul>
+    </div>
+  </main>
+
+  <!-- FIXED MOBILE BOTTOM TASKBAR -->
+  <nav class="admin-mobile-taskbar">
+    <a href="index.html" class="admin-taskbar-tab">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <span>Dashboard</span>
+    </a>
+    <a href="orders.html" class="admin-taskbar-tab">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      <span>Orders</span>
+    </a>
+    <a href="all-products.html" class="admin-taskbar-tab">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      <span>Products</span>
+    </a>
+    <a href="categories.html" class="admin-taskbar-tab">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+      <span>Categories</span>
+    </a>
+    <a href="sizes.html" class="admin-taskbar-tab active">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+      <span>Sizes</span>
+    </a>
+    <button class="admin-taskbar-tab" onclick="openDrawer()">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      <span>Menu</span>
+    </button>
+  </nav>
+
+  <!-- SETTINGS DRAWER -->
+  <div class="drawer-overlay" id="adminDrawer" onclick="closeDrawer(event)">
+    <div class="drawer-left" onclick="event.stopPropagation()">
+      <div class="drawer-header"><span class="drawer-title">ADMIN NAVIGATION</span><button class="menu-trigger-btn" onclick="closeDrawer()" style="color:#000;">✕</button></div>
+      <div class="drawer-body" style="display: flex; flex-direction: column; gap: 12px;">
+        <a href="index.html" class="btn-admin" style="text-align: center; background: #333;">DASHBOARD</a>
+        <a href="orders.html" class="btn-admin" style="text-align: center; background: #333;">CUSTOMER ORDERS</a>
+        <a href="all-products.html" class="btn-admin" style="text-align: center; background: #333;">ALL PRODUCTS CATALOG</a>
+        <a href="categories.html" class="btn-admin" style="text-align: center; background: #333;">MANAGE CATEGORIES</a>
+        <a href="sizes.html" class="btn-admin" style="text-align: center; background: var(--accent-blue);">MANAGE SIZES & STOCK</a>
+        <a href="add-product.html" class="btn-admin" style="text-align: center; background: #333;">+ ADD NEW PRODUCT</a>
+        <a href="bulk-upload.html" class="btn-admin" style="text-align: center; background: var(--accent-red);">⚡ BULK PRODUCT UPLOAD</a>
+        <a href="add-banner.html" class="btn-admin" style="text-align: center; background: #333;">MANAGE HERO BANNERS</a>
+        <a href="users.html" class="btn-admin" style="text-align: center; background: #333;">REGISTERED USERS</a>
+        <button class="btn-admin" id="pushNotifyBtn" onclick="requestAdminNotificationPermission()" style="width: 100%; background: #0077b6; margin-top: 12px;">ALLOW ORDER NOTIFICATIONS</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let allPresets = [];
+
+    function openDrawer() { document.getElementById('adminDrawer').classList.add('active'); }
+    function closeDrawer(e) { if(e) e.stopPropagation(); document.getElementById('adminDrawer').classList.remove('active'); }
+
+    async function loadPresets() {
+      const alphaGrid = document.getElementById('alphaSizesGrid');
+      const numericGrid = document.getElementById('numericSizesGrid');
+
+      const { data, error } = await window.fetchAdminSizePresets();
+      allPresets = data || [];
+
+      const alphaList = allPresets.filter(p => p.type === 'alpha');
+      const numericList = allPresets.filter(p => p.type === 'numeric');
+
+      document.getElementById('alphaCount').textContent = `${alphaList.filter(p => p.is_active).length} Active`;
+      document.getElementById('numericCount').textContent = `${numericList.filter(p => p.is_active).length} Active`;
+
+      alphaGrid.innerHTML = alphaList.map(p => `
+        <div class="size-chip-box ${p.is_active ? 'in-stock' : 'unselected'}" style="position:relative;" onclick="togglePreset('${p.id}', ${!p.is_active})" title="${p.is_active ? 'Click to disable' : 'Click to enable'}">
+          ${p.size_label}
+          <button onclick="event.stopPropagation(); deletePreset('${p.id}', '${p.size_label}')" style="position:absolute; top:2px; right:2px; background:rgba(0,0,0,0.5); color:#fff; border:none; border-radius:50%; width:14px; height:14px; font-size:9px; cursor:pointer; line-height:1;" title="Delete size">✕</button>
+        </div>
+      `).join('');
+
+      numericGrid.innerHTML = numericList.map(p => `
+        <div class="size-chip-box ${p.is_active ? 'in-stock' : 'unselected'}" style="position:relative;" onclick="togglePreset('${p.id}', ${!p.is_active})" title="${p.is_active ? 'Click to disable' : 'Click to enable'}">
+          ${p.size_label}
+          <button onclick="event.stopPropagation(); deletePreset('${p.id}', '${p.size_label}')" style="position:absolute; top:2px; right:2px; background:rgba(0,0,0,0.5); color:#fff; border:none; border-radius:50%; width:14px; height:14px; font-size:9px; cursor:pointer; line-height:1;" title="Delete size">✕</button>
+        </div>
+      `).join('');
+    }
+
+    async function handleAddPreset(e, type) {
+      e.preventDefault();
+      const input = document.getElementById(type === 'alpha' ? 'newAlphaInput' : 'newNumericInput');
+      const label = input.value.trim().toUpperCase();
+      if (!label) return;
+
+      const { error } = await window.saveAdminSizePreset(type, label);
+      if (error) {
+        window.adminToast('Error adding size: ' + (error.message || error), true);
+      } else {
+        window.adminToast(`Size "${label}" added!`);
+        input.value = '';
+        loadPresets();
+      }
+    }
+
+    async function togglePreset(id, isActive) {
+      const { error } = await window.toggleAdminSizePreset(id, isActive);
+      if (error) {
+        window.adminToast('Error updating size: ' + (error.message || error), true);
+      } else {
+        loadPresets();
+      }
+    }
+
+    async function deletePreset(id, label) {
+      if (!confirm(`Delete size "${label}" from master list?`)) return;
+      const { error } = await window.deleteAdminSizePreset(id);
+      if (error) {
+        window.adminToast('Error deleting size: ' + (error.message || error), true);
+      } else {
+        window.adminToast(`Size "${label}" deleted.`);
+        loadPresets();
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', loadPresets);
+    document.addEventListener('adminSupabaseReady', loadPresets);
+  </script>
+</body>
+</html>

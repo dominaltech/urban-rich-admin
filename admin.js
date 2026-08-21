@@ -401,6 +401,144 @@
     }
   };
 
+  // 8. DYNAMIC CATEGORY MANAGEMENT HELPERS
+  window.fetchAdminCategories = async function(includeInactive = true) {
+    const client = window.urSbClient || window.adminSupabase || createAdminSupabaseClient();
+    if (!client) return { data: [], error: 'Supabase client unavailable' };
+    try {
+      let query = client.from('categories').select('*').order('display_order', { ascending: true });
+      if (!includeInactive) {
+        query = query.eq('is_active', true);
+      }
+      const { data, error } = await query;
+      return { data: data || [], error };
+    } catch (err) {
+      console.error('fetchAdminCategories error:', err);
+      return { data: [], error: err };
+    }
+  };
+
+  window.saveAdminCategory = async function(catData) {
+    const client = window.urSbClient || window.adminSupabase || createAdminSupabaseClient();
+    if (!client) return { error: 'Supabase client unavailable' };
+    try {
+      const isUpdate = Boolean(catData.id);
+      let res;
+      if (isUpdate) {
+        res = await client.from('categories').update({
+          name: catData.name,
+          slug: catData.slug,
+          description: catData.description || null,
+          banner_url: catData.banner_url || null,
+          image_url: catData.image_url || catData.banner_url || null,
+          display_order: parseInt(catData.display_order) || 0,
+          is_active: catData.is_active !== false
+        }).eq('id', catData.id).select().single();
+      } else {
+        res = await client.from('categories').insert([{
+          name: catData.name,
+          slug: catData.slug,
+          description: catData.description || null,
+          banner_url: catData.banner_url || null,
+          image_url: catData.image_url || catData.banner_url || null,
+          display_order: parseInt(catData.display_order) || 0,
+          is_active: catData.is_active !== false
+        }]).select().single();
+      }
+      return res;
+    } catch (err) {
+      console.error('saveAdminCategory error:', err);
+      return { error: err };
+    }
+  };
+
+  window.deleteAdminCategory = async function(catId) {
+    const client = window.urSbClient || window.adminSupabase || createAdminSupabaseClient();
+    if (!client) return { error: 'Supabase client unavailable' };
+    try {
+      return await client.from('categories').delete().eq('id', catId);
+    } catch (err) {
+      console.error('deleteAdminCategory error:', err);
+      return { error: err };
+    }
+  };
+
+  // 9. SIZE PRESETS MANAGEMENT HELPERS
+  window.fetchAdminSizePresets = async function() {
+    const client = window.urSbClient || window.adminSupabase || createAdminSupabaseClient();
+    if (!client) {
+      // Fallback defaults if offline or DB loading
+      return {
+        data: [
+          { type: 'alpha', size_label: 'XS', is_active: true, display_order: 1 },
+          { type: 'alpha', size_label: 'S', is_active: true, display_order: 2 },
+          { type: 'alpha', size_label: 'M', is_active: true, display_order: 3 },
+          { type: 'alpha', size_label: 'L', is_active: true, display_order: 4 },
+          { type: 'alpha', size_label: 'XL', is_active: true, display_order: 5 },
+          { type: 'alpha', size_label: 'XXL', is_active: true, display_order: 6 },
+          { type: 'alpha', size_label: '3XL', is_active: true, display_order: 7 },
+          { type: 'numeric', size_label: '28', is_active: true, display_order: 1 },
+          { type: 'numeric', size_label: '30', is_active: true, display_order: 2 },
+          { type: 'numeric', size_label: '32', is_active: true, display_order: 3 },
+          { type: 'numeric', size_label: '34', is_active: true, display_order: 4 },
+          { type: 'numeric', size_label: '36', is_active: true, display_order: 5 },
+          { type: 'numeric', size_label: '38', is_active: true, display_order: 6 },
+          { type: 'numeric', size_label: '40', is_active: true, display_order: 7 },
+          { type: 'numeric', size_label: '42', is_active: true, display_order: 8 }
+        ],
+        error: null
+      };
+    }
+    try {
+      const { data, error } = await client
+        .from('size_presets')
+        .select('*')
+        .order('display_order', { ascending: true });
+      return { data: data || [], error };
+    } catch (err) {
+      console.error('fetchAdminSizePresets error:', err);
+      return { data: [], error: err };
+    }
+  };
+
+  window.saveAdminSizePreset = async function(type, sizeLabel) {
+    const client = window.urSbClient || window.adminSupabase || createAdminSupabaseClient();
+    if (!client) return { error: 'Supabase client unavailable' };
+    try {
+      return await client.from('size_presets').upsert({
+        type: type,
+        size_label: sizeLabel.trim().toUpperCase(),
+        is_active: true,
+        display_order: Date.now() % 1000
+      }, { onConflict: 'type,size_label' }).select().single();
+    } catch (err) {
+      console.error('saveAdminSizePreset error:', err);
+      return { error: err };
+    }
+  };
+
+  window.toggleAdminSizePreset = async function(presetId, isActive) {
+    const client = window.urSbClient || window.adminSupabase || createAdminSupabaseClient();
+    if (!client) return { error: 'Supabase client unavailable' };
+    try {
+      return await client.from('size_presets').update({ is_active: isActive }).eq('id', presetId);
+    } catch (err) {
+      console.error('toggleAdminSizePreset error:', err);
+      return { error: err };
+    }
+  };
+
+  window.deleteAdminSizePreset = async function(presetId) {
+    const client = window.urSbClient || window.adminSupabase || createAdminSupabaseClient();
+    if (!client) return { error: 'Supabase client unavailable' };
+    try {
+      return await client.from('size_presets').delete().eq('id', presetId);
+    } catch (err) {
+      console.error('deleteAdminSizePreset error:', err);
+      return { error: err };
+    }
+  };
+
   document.addEventListener('DOMContentLoaded', function() {
     if ("Notification" in window && Notification.permission === "granted") {
       const btn = document.getElementById('pushNotifyBtn');
@@ -422,3 +560,4 @@
   });
 
 })();
+

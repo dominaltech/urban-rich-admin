@@ -219,8 +219,79 @@
     if (drawer) drawer.classList.remove('active');
   };
 
-  // 11. ROBUST SUPABASE STORAGE UPLOADER (SUPPORTS BOTH RAW FILE AND HTML INPUT)
-  window.uploadFileToStorage = async function(fileOrInput, bucket = 'product-images', folder = 'products') {
+  // 10.5 CLIENT-SIDE HIGH-PERFORMANCE CANVAS WEBP/JPEG COMPRESSION ENGINE
+  window.compressImageFile = async function(file, options = {}) {
+    if (!file || !(file instanceof File) || !file.type.startsWith('image/')) {
+      return file;
+    }
+
+    // Configurable targets (defaults: max dimension 1200px for products, 1920px for banners, quality 0.82)
+    const maxWidth = options.maxWidth || (options.isBanner ? 1920 : 1200);
+    const maxHeight = options.maxHeight || (options.isBanner ? 1000 : 1500);
+    const quality = options.quality || 0.82;
+
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        const img = new Image();
+        img.onload = function() {
+          let width = img.width;
+          let height = img.height;
+
+          // Scale down proportionally if larger than target resolution
+          if (width > maxWidth || height > maxHeight) {
+            const ratio = Math.min(maxWidth / width, maxHeight / height);
+            width = Math.round(width * ratio);
+            height = Math.round(height * ratio);
+          }
+
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+
+          // Enable high-quality image smoothing
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = 'high';
+          ctx.drawImage(img, 0, 0, width, height);
+
+          // Determine target MIME type (WebP by default with progressive fallback)
+          let targetType = 'image/webp';
+          let extension = 'webp';
+          
+          canvas.toBlob(function(blob) {
+            if (!blob) {
+              console.warn('Canvas blob creation failed, falling back to original file');
+              return resolve(file);
+            }
+
+            // Create compressed File object with proper name and extension
+            const originalName = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
+            const compressedFile = new File([blob], `${originalName}.${extension}`, {
+              type: targetType,
+              lastModified: Date.now()
+            });
+
+            console.log(`[Image Compressor] Original: ${(file.size / 1024).toFixed(1)} KB -> Compressed: ${(compressedFile.size / 1024).toFixed(1)} KB (Saved ${(((file.size - compressedFile.size)/file.size)*100).toFixed(1)}%)`);
+            resolve(compressedFile);
+          }, targetType, quality);
+        };
+        img.onerror = function() {
+          console.warn('Error loading image for compression, using original');
+          resolve(file);
+        };
+        img.src = event.target.result;
+      };
+      reader.onerror = function() {
+        console.warn('FileReader error, using original file');
+        resolve(file);
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  // 11. ROBUST SUPABASE STORAGE UPLOADER WITH AUTOMATIC WEBP COMPRESSION & IMMUTABLE CDN CACHING
+  window.uploadFileToStorage = async function(fileOrInput, bucket = 'product-images', folder = 'products', options = {}) {
     let file = null;
     if (fileOrInput instanceof File) {
       file = fileOrInput;
@@ -230,6 +301,11 @@
 
     if (!file) return null;
 
+    // Automatic Client-Side Compression before network transfer
+    const isBanner = folder === 'banners' || folder === 'categories';
+    const compressedFile = await window.compressImageFile(file, { isBanner, ...options });
+    file = compressedFile || file;
+
     const client = window.urSbClient || window.adminSupabase || createAdminSupabaseClient();
     if (!client) {
       console.warn('Supabase client unavailable. Falling back to default asset.');
@@ -237,8 +313,8 @@
     }
 
     // Clean file extension & safe filename
-    const originalExt = (file.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '');
-    const cleanExt = originalExt.length > 0 ? originalExt : 'jpg';
+    const originalExt = (file.name.split('.').pop() || 'webp').toLowerCase().replace(/[^a-z0-9]/g, '');
+    const cleanExt = originalExt.length > 0 ? originalExt : 'webp';
     const timestamp = Date.now();
     const randomStr = Math.random().toString(36).substring(2, 8);
     const sanitizedName = file.name.replace(/[^a-zA-Z0-9_-]/g, '_').substring(0, 30);
@@ -248,9 +324,9 @@
       const { data, error: uploadError } = await client.storage
         .from(bucket)
         .upload(filePath, file, {
-          cacheControl: '3600',
+          cacheControl: '31536000, public, immutable',
           upsert: true,
-          contentType: file.type || 'image/jpeg'
+          contentType: file.type || 'image/webp'
         });
 
       if (uploadError) {

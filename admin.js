@@ -263,7 +263,78 @@
     }
   };
 
-  // 8. FETCH PRODUCT GALLERY IMAGES
+  // 8. COUPONS & EVENT BANNERS MANAGEMENT ROUTINES
+  window.fetchAdminCoupons = async function() {
+    const client = window.urSbClient || window.adminSupabase || createAdminSupabaseClient();
+    if (!client) return { data: [], error: { message: 'Supabase not initialized' } };
+    try {
+      const { data, error } = await client
+        .from('coupons')
+        .select('*')
+        .order('created_at', { ascending: false });
+      return { data: data || [], error };
+    } catch (err) {
+      console.error('fetchAdminCoupons error:', err);
+      return { data: [], error: err };
+    }
+  };
+
+  window.saveAdminCoupon = async function(couponData) {
+    const client = window.urSbClient || window.adminSupabase || createAdminSupabaseClient();
+    if (!client) return { error: { message: 'Supabase not initialized' } };
+    try {
+      let res;
+      if (couponData.id) {
+        res = await client
+          .from('coupons')
+          .update({ ...couponData, updated_at: new Date().toISOString() })
+          .eq('id', couponData.id)
+          .select()
+          .single();
+      } else {
+        res = await client
+          .from('coupons')
+          .insert([couponData])
+          .select()
+          .single();
+      }
+      return res;
+    } catch (err) {
+      return { error: err };
+    }
+  };
+
+  window.deleteAdminCoupon = async function(couponId) {
+    const client = window.urSbClient || window.adminSupabase || createAdminSupabaseClient();
+    if (!client) return { error: { message: 'Supabase not initialized' } };
+    try {
+      const { data, error } = await client
+        .from('coupons')
+        .delete()
+        .eq('id', couponId);
+      return { data, error };
+    } catch (err) {
+      return { error: err };
+    }
+  };
+
+  window.toggleAdminCouponField = async function(couponId, fieldName, currentVal) {
+    const client = window.urSbClient || window.adminSupabase || createAdminSupabaseClient();
+    if (!client) return { error: { message: 'Supabase not initialized' } };
+    try {
+      const { data, error } = await client
+        .from('coupons')
+        .update({ [fieldName]: !currentVal, updated_at: new Date().toISOString() })
+        .eq('id', couponId)
+        .select()
+        .single();
+      return { data, error };
+    } catch (err) {
+      return { error: err };
+    }
+  };
+
+  // 9. FETCH PRODUCT GALLERY IMAGES
   window.fetchProductImages = async function(productId) {
     const client = window.urSbClient || window.adminSupabase || createAdminSupabaseClient();
     if (!client || !productId) return { data: [], error: null };

@@ -203,7 +203,14 @@
         const { data: orders } = await window.fetchAdminOrders();
         if (orders && orders.length > 0) {
           document.getElementById('totalOrdersVal').textContent = orders.length;
-          const rev = orders.reduce((sum, o) => sum + parseFloat(o.total_amount || 0), 0);
+          const rev = orders.reduce((sum, o) => {
+            const isPaid = (o.payment_status === 'PAID');
+            const isNotCancelled = o.order_status !== 'CANCELLED' && o.order_status !== 'PAYMENT_CANCELLED';
+            if (isPaid && isNotCancelled) {
+              return sum + parseFloat(o.total_amount || 0);
+            }
+            return sum;
+          }, 0);
           document.getElementById('totalRevenueVal').textContent = `₹${rev.toFixed(2)}`;
 
           ordersTbody.innerHTML = orders.slice(0, 8).map(o => {
@@ -229,7 +236,8 @@
             }
 
             const status = o.order_status || 'PLACED';
-            const badgeClass = `badge-${status.toLowerCase()}`;
+            const payStatus = (o.payment_status || '').toUpperCase();
+            const badgeClass = (status === 'CANCELLED' || status === 'PAYMENT_CANCELLED' || payStatus === 'CANCELLED') ? 'badge-cancelled' : `badge-${status.toLowerCase()}`;
 
             return `
               <tr>
@@ -243,7 +251,7 @@
                 </td>
                 <td>${itemsHtml}</td>
                 <td><strong>₹${parseFloat(o.total_amount || 0).toFixed(0)}</strong></td>
-                <td><span class="status-badge ${badgeClass}">${status}</span></td>
+                <td><span class="status-badge ${badgeClass}">${payStatus === 'CANCELLED' ? 'CANCELLED' : status}</span></td>
                 <td style="text-align: center;">
                   <a href="orders.html" class="btn-admin" style="padding: 4px 8px; font-size: 0.75rem; background: #222;">MANAGE</a>
                 </td>

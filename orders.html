@@ -67,7 +67,7 @@
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
       <div>
         <h2 style="font-family: var(--font-heading); font-size: 1.5rem; font-weight: 900; letter-spacing: -0.5px;">CUSTOMER ORDERS MANAGEMENT</h2>
-        <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 2px;">Track orders, inspect ordered products & sizes, manage dispatch, and communicate directly with customers.</p>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 2px;">Track orders, inspect ordered products & sizes, manage dispatch, and follow up on customer payment attempts.</p>
       </div>
       <button class="btn-admin btn-admin-success" onclick="loadOrders()" style="font-size: 0.8rem; padding: 8px 16px;">
         <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
@@ -94,7 +94,7 @@
         <span class="order-stat-val" id="statShippedOrders" style="color: #6b21a8;">0</span>
       </div>
       <div class="order-stat-card" style="border-left: 4px solid #166534;">
-        <span class="order-stat-label">DELIVERED / REVENUE</span>
+        <span class="order-stat-label">PAID REVENUE</span>
         <span class="order-stat-val" id="statDeliveredRev" style="color: #166534; font-size: 1.25rem;">₹0.00</span>
       </div>
     </div>
@@ -112,7 +112,7 @@
         <button class="filter-chip-btn" data-status="PROCESSING" onclick="setStatusFilter('PROCESSING', this)">Processing (<span id="countProcessing">0</span>)</button>
         <button class="filter-chip-btn" data-status="SHIPPED" onclick="setStatusFilter('SHIPPED', this)">Shipped (<span id="countShipped">0</span>)</button>
         <button class="filter-chip-btn" data-status="DELIVERED" onclick="setStatusFilter('DELIVERED', this)">Delivered (<span id="countDelivered">0</span>)</button>
-        <button class="filter-chip-btn" data-status="CANCELLED" onclick="setStatusFilter('CANCELLED', this)">Cancelled (<span id="countCancelled">0</span>)</button>
+        <button class="filter-chip-btn" data-status="CANCELLED" onclick="setStatusFilter('CANCELLED', this)">Cancelled / Unpaid (<span id="countCancelled">0</span>)</button>
       </div>
     </div>
 
@@ -125,7 +125,7 @@
             <th style="min-width: 200px;">Customer Info</th>
             <th style="min-width: 320px;">Ordered Products & Sizes</th>
             <th style="min-width: 200px;">Shipping Address</th>
-            <th style="min-width: 130px;">Amount & Mode</th>
+            <th style="min-width: 140px;">Amount & Mode</th>
             <th style="min-width: 140px;">Order Status</th>
             <th style="min-width: 120px; text-align: center;">Actions</th>
           </tr>
@@ -252,10 +252,17 @@
       const processing = allOrdersData.filter(o => o.order_status === 'PROCESSING').length;
       const shipped = allOrdersData.filter(o => o.order_status === 'SHIPPED').length;
       const delivered = allOrdersData.filter(o => o.order_status === 'DELIVERED').length;
-      const cancelled = allOrdersData.filter(o => o.order_status === 'CANCELLED').length;
+      const cancelled = allOrdersData.filter(o => (
+        o.order_status === 'CANCELLED' || 
+        o.order_status === 'PAYMENT_CANCELLED' || 
+        o.payment_status === 'CANCELLED' || 
+        o.payment_status === 'FAILED'
+      )).length;
 
       const totalRevenue = allOrdersData.reduce((sum, o) => {
-        if (o.order_status !== 'CANCELLED') {
+        const isPaid = (o.payment_status === 'PAID');
+        const isNotCancelled = o.order_status !== 'CANCELLED' && o.order_status !== 'PAYMENT_CANCELLED';
+        if (isPaid && isNotCancelled) {
           return sum + parseFloat(o.total_amount || 0);
         }
         return sum;
@@ -290,7 +297,16 @@
 
       // Status filter
       if (currentStatusFilter !== 'ALL') {
-        filtered = filtered.filter(o => (o.order_status || 'PLACED') === currentStatusFilter);
+        if (currentStatusFilter === 'CANCELLED') {
+          filtered = filtered.filter(o => (
+            o.order_status === 'CANCELLED' || 
+            o.order_status === 'PAYMENT_CANCELLED' || 
+            o.payment_status === 'CANCELLED' || 
+            o.payment_status === 'FAILED'
+          ));
+        } else {
+          filtered = filtered.filter(o => (o.order_status || 'PLACED') === currentStatusFilter);
+        }
       }
 
       // Search query filter
@@ -331,10 +347,18 @@
         const orderId = o.id;
         const orderNum = o.order_number || 'UR-ORDER';
         const dateStr = formatDateTime(o.created_at);
-        const isPaid = (o.payment_status === 'PAID');
-        const paymentBadge = isPaid 
-          ? `<span class="badge-paid">PAID ONLINE</span>` 
-          : `<span class="badge-cod">CASH ON DELIVERY</span>`;
+        const payStatus = (o.payment_status || '').toUpperCase();
+        
+        let paymentBadge = '';
+        if (payStatus === 'PAID') {
+          paymentBadge = `<span class="badge-paid" style="background:#15803d;color:#ffffff;padding:3px 7px;font-size:0.68rem;border-radius:4px;font-weight:800;letter-spacing:0.5px;display:inline-block;">PAID ONLINE ✓</span>`;
+        } else if (payStatus === 'CANCELLED' || o.order_status === 'PAYMENT_CANCELLED') {
+          paymentBadge = `<span class="badge-cancelled" style="background:#fee2e2;color:#991b1b;border:1px solid #fecaca;padding:3px 7px;font-size:0.68rem;border-radius:4px;font-weight:800;letter-spacing:0.5px;display:inline-block;">PAYMENT CANCELLED ✕</span>`;
+        } else if (payStatus === 'FAILED') {
+          paymentBadge = `<span class="badge-cancelled" style="background:#fee2e2;color:#991b1b;border:1px solid #fecaca;padding:3px 7px;font-size:0.68rem;border-radius:4px;font-weight:800;letter-spacing:0.5px;display:inline-block;">PAYMENT FAILED ✕</span>`;
+        } else {
+          paymentBadge = `<span class="badge-processing" style="background:#fef3c7;color:#92400e;border:1px solid #fde68a;padding:3px 7px;font-size:0.68rem;border-radius:4px;font-weight:800;letter-spacing:0.5px;display:inline-block;">PAYMENT PENDING ⏳</span>`;
+        }
 
         // Format shipping address
         let addressHtml = '-';
@@ -350,10 +374,13 @@
           addressHtml = `<div style="font-size: 0.85rem; color: #333;">${o.shipping_address}</div>`;
         }
 
-        // WhatsApp direct link
+        // WhatsApp direct link with smart context
+        const isCancelled = (payStatus === 'CANCELLED' || payStatus === 'FAILED' || o.order_status === 'PAYMENT_CANCELLED');
         const cleanPhone = sanitizePhoneForWhatsApp(o.customer_phone);
-        const waText = encodeURIComponent(`Hello ${o.customer_name || 'Customer'}! Regarding your Urban Rich order #${orderNum} for ₹${o.total_amount}. We are reviewing your order for shipment. Thank you!`);
-        const waLink = `https://wa.me/${cleanPhone}?text=${waText}`;
+        const waMsg = isCancelled 
+          ? `Hello ${o.customer_name || 'Customer'}! We noticed your Urban Rich order attempt #${orderNum} for ₹${o.total_amount} was not completed. Would you like any help with completing your purchase?`
+          : `Hello ${o.customer_name || 'Customer'}! Regarding your Urban Rich order #${orderNum} for ₹${o.total_amount}. We are reviewing your order for shipment. Thank you!`;
+        const waLink = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(waMsg)}`;
 
         // Format Ordered Items (with images, names & sizes)
         const items = o.order_items || [];
@@ -397,18 +424,18 @@
             <td>
               <div style="font-weight: 900; font-size: 0.95rem; color: #111;">${orderNum}</div>
               <div style="font-size: 0.75rem; color: #666; margin: 3px 0;">${dateStr}</div>
-              <div>${paymentBadge}</div>
+              <div style="margin-top: 4px;">${paymentBadge}</div>
             </td>
             <td>
               <div class="customer-card-cell">
                 <div class="customer-name-row">${o.customer_name || 'Guest'}</div>
                 <div style="font-size: 0.78rem; color: #555;">${o.customer_phone || '-'}</div>
                 ${o.customer_email ? `<div style="font-size: 0.74rem; color: #777; overflow: hidden; text-overflow: ellipsis;">${o.customer_email}</div>` : ''}
-                <div class="customer-actions-row" style="margin-top: 4px;">
+                <div class="customer-actions-row" style="margin-top: 6px;">
                   ${cleanPhone ? `
-                    <a href="${waLink}" target="_blank" class="btn-order-action btn-whatsapp" title="WhatsApp Customer">
+                    <a href="${waLink}" target="_blank" class="btn-order-action btn-whatsapp" title="${isCancelled ? 'Follow up on WhatsApp' : 'WhatsApp Customer'}">
                       <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.36 3.45 16.86L2.05 22L7.3 20.62C8.75 21.41 10.38 21.83 12.04 21.83C17.5 21.83 21.95 17.38 21.95 11.92C21.95 9.27 20.92 6.78 19.05 4.91C17.18 3.04 14.69 2 12.04 2ZM12.05 3.67C14.25 3.67 16.31 4.53 17.87 6.09C19.42 7.65 20.28 9.72 20.28 11.92C20.28 16.46 16.58 20.16 12.04 20.16C10.67 20.16 9.33 19.8 8.16 19.11L7.88 18.94L4.76 19.76L5.59 16.71L5.4 16.41C4.64 15.2 4.24 13.58 4.24 11.92C4.24 7.38 7.94 3.67 12.05 3.67Z"/></svg>
-                      <span>WhatsApp</span>
+                      <span>${isCancelled ? 'Follow Up' : 'WhatsApp'}</span>
                     </a>
                     <a href="tel:${o.customer_phone}" class="btn-order-action btn-call" title="Call Customer">
                       <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
@@ -428,6 +455,7 @@
               <div style="font-size: 1.05rem; font-weight: 900; color: #111;">₹${parseFloat(o.total_amount || 0).toFixed(2)}</div>
               <div style="font-size: 0.72rem; color: #666; margin-top: 2px;">
                 Subtotal: ₹${parseFloat(o.subtotal || o.total_amount || 0).toFixed(0)}<br>
+                ${parseFloat(o.discount_amount || 0) > 0 ? `<span style="color: #166534; font-weight:700;">Coupon (RAKHI5): -₹${parseFloat(o.discount_amount).toFixed(0)}</span><br>` : ''}
                 Shipping: ${parseFloat(o.shipping_fee || 0) === 0 ? 'FREE' : '₹' + parseFloat(o.shipping_fee).toFixed(0)}
               </div>
             </td>
@@ -439,7 +467,7 @@
                   <option value="PROCESSING" ${status === 'PROCESSING' ? 'selected' : ''}>Processing</option>
                   <option value="SHIPPED" ${status === 'SHIPPED' ? 'selected' : ''}>Shipped</option>
                   <option value="DELIVERED" ${status === 'DELIVERED' ? 'selected' : ''}>Delivered</option>
-                  <option value="CANCELLED" ${status === 'CANCELLED' ? 'selected' : ''}>Cancelled</option>
+                  <option value="CANCELLED" ${status === 'CANCELLED' || status === 'PAYMENT_CANCELLED' ? 'selected' : ''}>Cancelled / Unpaid</option>
                 </select>
               </div>
             </td>
@@ -497,7 +525,11 @@
       }
 
       const cleanPhone = sanitizePhoneForWhatsApp(order.customer_phone);
-      const waLink = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(`Hello ${order.customer_name}, here is an update on your Urban Rich order #${order.order_number}...`)}`;
+      const isCancelled = (order.payment_status === 'CANCELLED' || order.payment_status === 'FAILED' || order.order_status === 'PAYMENT_CANCELLED');
+      const waMsg = isCancelled
+        ? `Hello ${order.customer_name || 'Customer'}, we noticed your order #${order.order_number} for ₹${order.total_amount} wasn't completed. Let us know if you need assistance!`
+        : `Hello ${order.customer_name || 'Customer'}, here is an update on your Urban Rich order #${order.order_number}...`;
+      const waLink = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(waMsg)}`;
 
       const items = order.order_items || [];
 
@@ -568,6 +600,12 @@
                   <td colspan="4" style="text-align: right; font-weight: 700; color: #666; border-top: 1px solid #e2e8f0;">Subtotal:</td>
                   <td style="text-align: right; font-weight: 700; border-top: 1px solid #e2e8f0;">₹${parseFloat(order.subtotal || order.total_amount || 0).toFixed(2)}</td>
                 </tr>
+                ${parseFloat(order.discount_amount || 0) > 0 ? `
+                  <tr>
+                    <td colspan="4" style="text-align: right; font-weight: 700; color: #166534;">Discount (Coupon):</td>
+                    <td style="text-align: right; font-weight: 700; color: #166534;">-₹${parseFloat(order.discount_amount).toFixed(2)}</td>
+                  </tr>
+                ` : ''}
                 <tr>
                   <td colspan="4" style="text-align: right; font-weight: 700; color: #666;">Shipping Fee:</td>
                   <td style="text-align: right; font-weight: 700;">${parseFloat(order.shipping_fee || 0) === 0 ? 'FREE (₹0.00)' : '₹' + parseFloat(order.shipping_fee).toFixed(2)}</td>
@@ -580,7 +618,7 @@
             </table>
 
             <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 8px; font-size: 0.8rem; color: #666;">
-              <span>Payment Mode: <strong>${order.payment_status === 'PAID' ? 'ONLINE (CASHFREE)' : 'CASH ON DELIVERY (COD)'}</strong></span>
+              <span>Payment Mode: <strong>ONLINE (CASHFREE)</strong> — Status: <strong style="color:${order.payment_status === 'PAID' ? '#166534' : '#991b1b'};">${order.payment_status === 'PAID' ? 'PAID ONLINE ✓' : (order.payment_status === 'CANCELLED' ? 'PAYMENT CANCELLED ✕' : 'PAYMENT PENDING ⏳')}</strong></span>
               <span>Current Status: <strong>${order.order_status || 'PLACED'}</strong></span>
             </div>
           </div>
@@ -602,7 +640,7 @@
             ${cleanPhone ? `
               <a href="${waLink}" target="_blank" class="btn-order-action btn-whatsapp" style="padding: 8px 14px; font-size: 0.82rem;">
                 <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.36 3.45 16.86L2.05 22L7.3 20.62C8.75 21.41 10.38 21.83 12.04 21.83C17.5 21.83 21.95 17.38 21.95 11.92C21.95 9.27 20.92 6.78 19.05 4.91C17.18 3.04 14.69 2 12.04 2ZM12.05 3.67C14.25 3.67 16.31 4.53 17.87 6.09C19.42 7.65 20.28 9.72 20.28 11.92C20.28 16.46 16.58 20.16 12.04 20.16C10.67 20.16 9.33 19.8 8.16 19.11L7.88 18.94L4.76 19.76L5.59 16.71L5.4 16.41C4.64 15.2 4.24 13.58 4.24 11.92C4.24 7.38 7.94 3.67 12.05 3.67Z"/></svg>
-                <span>Chat with Customer</span>
+                <span>${isCancelled ? 'Chat / Follow Up' : 'Chat with Customer'}</span>
               </a>
             ` : ''}
           </div>

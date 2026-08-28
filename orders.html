@@ -11,6 +11,99 @@
   <script src="config.js"></script>
   <script src="admin.js"></script>
   <style>
+    .order-action-btn-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      width: 100%;
+    }
+    .btn-action-view {
+      padding: 6px 10px;
+      font-size: 0.75rem;
+      background: #111;
+      color: #fff;
+      border: 1px solid #333;
+      border-radius: 4px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      transition: all 0.15s ease;
+    }
+    .btn-action-view:hover {
+      background: #222;
+    }
+    .btn-action-delete {
+      padding: 5px 10px;
+      font-size: 0.72rem;
+      background: #fee2e2;
+      color: #b91c1c;
+      border: 1px solid #fca5a5;
+      border-radius: 4px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      transition: all 0.15s ease;
+    }
+    .btn-action-delete:hover {
+      background: #dc2626;
+      color: #ffffff;
+      border-color: #b91c1c;
+    }
+    .modal-tab-nav {
+      display: flex;
+      border-bottom: 2px solid #e2e8f0;
+      margin-bottom: 16px;
+      gap: 8px;
+    }
+    .modal-tab-btn {
+      padding: 8px 16px;
+      font-size: 0.82rem;
+      font-weight: 800;
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+      cursor: pointer;
+      color: #64748b;
+      text-transform: uppercase;
+    }
+    .modal-tab-btn.active {
+      color: #0f172a;
+      border-bottom-color: #0f172a;
+    }
+    .edit-form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .edit-form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .edit-form-group.full-width {
+      grid-column: 1 / -1;
+    }
+    .edit-form-group label {
+      font-size: 0.74rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      color: #475569;
+    }
+    .edit-form-group input, .edit-form-group select {
+      padding: 8px 10px;
+      border: 1px solid #cbd5e1;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #1e293b;
+    }
     @media print {
       body * {
         visibility: hidden;
@@ -67,7 +160,7 @@
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
       <div>
         <h2 style="font-family: var(--font-heading); font-size: 1.5rem; font-weight: 900; letter-spacing: -0.5px;">CUSTOMER ORDERS MANAGEMENT</h2>
-        <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 2px;">Track orders, inspect ordered products & sizes, manage dispatch, and follow up on customer payment attempts.</p>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 2px;">Inspect orders, edit customer info, update dispatch tracking, manage CRUD operations and delete cancelled orders.</p>
       </div>
       <button class="btn-admin btn-admin-success" onclick="loadOrders()" style="font-size: 0.8rem; padding: 8px 16px;">
         <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
@@ -127,7 +220,7 @@
             <th style="min-width: 200px;">Shipping Address</th>
             <th style="min-width: 140px;">Amount & Mode</th>
             <th style="min-width: 140px;">Order Status</th>
-            <th style="min-width: 120px; text-align: center;">Actions</th>
+            <th style="min-width: 130px; text-align: center;">Actions</th>
           </tr>
         </thead>
         <tbody id="ordersBody">
@@ -137,9 +230,9 @@
     </div>
   </main>
 
-  <!-- ORDER DETAIL & INVOICE MODAL -->
+  <!-- ORDER DETAIL, EDIT & INVOICE MODAL -->
   <div class="admin-modal-overlay" id="orderDetailModal" onclick="closeOrderModal(event)">
-    <div class="admin-modal-card order-detail-modal-card" onclick="event.stopPropagation()">
+    <div class="admin-modal-card order-detail-modal-card" onclick="event.stopPropagation()" style="max-width: 760px;">
       <div class="admin-modal-header">
         <div>
           <span class="admin-modal-title" id="modalOrderNumber">ORDER DETAILS</span>
@@ -204,6 +297,8 @@
   <script>
     let allOrdersData = [];
     let currentStatusFilter = 'ALL';
+    let activeModalTab = 'SLIP'; // 'SLIP' or 'EDIT'
+    let currentEditingOrderId = null;
 
     function formatDateTime(dateStr) {
       if (!dateStr) return '-';
@@ -414,7 +509,7 @@
         const badgeClass = `badge-${status.toLowerCase()}`;
 
         return `
-          <tr>
+          <tr id="order-row-${orderId}">
             <td>
               <div style="font-weight: 900; font-size: 0.95rem; color: #111;">${orderNum}</div>
               <div style="font-size: 0.75rem; color: #666; margin: 3px 0;">${dateStr}</div>
@@ -466,9 +561,16 @@
               </div>
             </td>
             <td style="text-align: center;">
-              <button class="btn-admin" onclick="openOrderModal('${orderId}')" style="padding: 7px 12px; font-size: 0.75rem; background: #111; width: 100%;">
-                <span>VIEW SLIP</span>
-              </button>
+              <div class="order-action-btn-group">
+                <button class="btn-action-view" onclick="openOrderModal('${orderId}')" title="View or Edit Order Details">
+                  <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  <span>VIEW / EDIT</span>
+                </button>
+                <button class="btn-action-delete" onclick="confirmDeleteOrder('${orderId}', '${orderNum}')" title="Permanently Delete Order">
+                  <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+                  <span>DELETE</span>
+                </button>
+              </div>
             </td>
           </tr>
         `;
@@ -503,19 +605,80 @@
       }
     }
 
+    async function confirmDeleteOrder(orderId, orderNum) {
+      if (!confirm(`Are you sure you want to permanently delete order #${orderNum}?\n\n⚠️ This will permanently remove the order record and all its ordered items from the database.`)) {
+        return;
+      }
+
+      if (typeof window.deleteAdminOrder === 'function') {
+        const { error } = await window.deleteAdminOrder(orderId);
+        if (error) {
+          console.error('Delete order error:', error);
+          window.adminToast('Failed to delete order: ' + error.message, true);
+          return;
+        }
+      } else {
+        const client = window.urSbClient || window.adminSupabase;
+        if (client) {
+          await client.from('order_items').delete().eq('order_id', orderId);
+          await client.from('payments').delete().eq('order_id', orderId);
+          const { error } = await client.from('orders').delete().eq('id', orderId);
+          if (error) {
+            window.adminToast('Failed to delete order: ' + error.message, true);
+            return;
+          }
+        }
+      }
+
+      window.adminToast(`✓ Order #${orderNum} deleted successfully!`);
+
+      // Close modal if currently viewing deleted order
+      if (currentEditingOrderId === orderId) {
+        closeOrderModal();
+      }
+
+      // Remove from local array & update UI live
+      allOrdersData = allOrdersData.filter(o => o.id !== orderId);
+      updateMetricsAndFilterCounts();
+      filterAndRenderOrders();
+    }
+
+    function setModalTab(tab) {
+      activeModalTab = tab;
+      const slipTabBtn = document.getElementById('modalTabSlipBtn');
+      const editTabBtn = document.getElementById('modalTabEditBtn');
+      const slipContent = document.getElementById('modalTabSlipContent');
+      const editContent = document.getElementById('modalTabEditContent');
+
+      if (tab === 'SLIP') {
+        if (slipTabBtn) slipTabBtn.classList.add('active');
+        if (editTabBtn) editTabBtn.classList.remove('active');
+        if (slipContent) slipContent.style.display = 'block';
+        if (editContent) editContent.style.display = 'none';
+      } else {
+        if (slipTabBtn) slipTabBtn.classList.remove('active');
+        if (editTabBtn) editTabBtn.classList.add('active');
+        if (slipContent) slipContent.style.display = 'none';
+        if (editContent) editContent.style.display = 'block';
+      }
+    }
+
     function openOrderModal(orderId) {
       const order = allOrdersData.find(o => o.id === orderId);
       if (!order) return;
 
-      document.getElementById('modalOrderNumber').textContent = `ORDER RECEIPT: ${order.order_number}`;
+      currentEditingOrderId = orderId;
+      document.getElementById('modalOrderNumber').textContent = `ORDER: ${order.order_number}`;
       document.getElementById('modalOrderDate').textContent = `Placed on: ${formatDateTime(order.created_at)}`;
 
+      let addrObj = { address: '', city: '', state: '', pincode: '' };
       let addrText = '-';
       if (typeof order.shipping_address === 'object' && order.shipping_address) {
-        const a = order.shipping_address;
-        addrText = `${a.address || ''}, ${a.city || ''}, ${a.state || ''} - ${a.pincode || ''}`;
+        addrObj = { ...addrObj, ...order.shipping_address };
+        addrText = `${addrObj.address || ''}, ${addrObj.city || ''}, ${addrObj.state || ''} - ${addrObj.pincode || ''}`;
       } else if (order.shipping_address) {
         addrText = order.shipping_address;
+        addrObj.address = order.shipping_address;
       }
 
       const cleanPhone = sanitizePhoneForWhatsApp(order.customer_phone);
@@ -528,108 +691,172 @@
       const items = order.order_items || [];
 
       const bodyHtml = `
-        <div id="printInvoiceArea">
-          <div class="invoice-box">
-            <!-- INVOICE HEADER -->
-            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #111; padding-bottom: 12px; margin-bottom: 14px;">
-              <div style="display:flex; align-items:center; gap: 10px;">
-                <img src="images/logo.jpg" alt="Urban Rich" style="height: 36px; border-radius: 4px;" />
-                <div>
-                  <div style="font-weight: 900; font-size: 1.1rem; letter-spacing: 1px;">URBAN RICH</div>
-                  <div style="font-size: 0.75rem; color: #666;">Official Store Invoice & Packing Slip</div>
+        <!-- MODAL TAB NAVIGATION (NO PRINT) -->
+        <div class="modal-tab-nav no-print">
+          <button class="modal-tab-btn active" id="modalTabSlipBtn" onclick="setModalTab('SLIP')">📄 PACKING SLIP &amp; RECEIPT</button>
+          <button class="modal-tab-btn" id="modalTabEditBtn" onclick="setModalTab('EDIT')">✏️ EDIT ORDER &amp; CUSTOMER DATA</button>
+        </div>
+
+        <!-- TAB 1: PACKING SLIP / INVOICE VIEW -->
+        <div id="modalTabSlipContent">
+          <div id="printInvoiceArea">
+            <div class="invoice-box">
+              <!-- INVOICE HEADER -->
+              <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #111; padding-bottom: 12px; margin-bottom: 14px;">
+                <div style="display:flex; align-items:center; gap: 10px;">
+                  <img src="images/logo.jpg" alt="Urban Rich" style="height: 36px; border-radius: 4px;" />
+                  <div>
+                    <div style="font-weight: 900; font-size: 1.1rem; letter-spacing: 1px;">URBAN RICH</div>
+                    <div style="font-size: 0.75rem; color: #666;">Official Store Invoice & Packing Slip</div>
+                  </div>
+                </div>
+                <div style="text-align: right;">
+                  <div style="font-weight: 900; font-size: 1rem;">#${order.order_number}</div>
+                  <div style="font-size: 0.75rem; color: #666;">${formatDateTime(order.created_at)}</div>
                 </div>
               </div>
-              <div style="text-align: right;">
-                <div style="font-weight: 900; font-size: 1rem;">#${order.order_number}</div>
-                <div style="font-size: 0.75rem; color: #666;">${formatDateTime(order.created_at)}</div>
-              </div>
-            </div>
 
-            <!-- CUSTOMER & SHIPPING INFO -->
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px; font-size: 0.85rem;">
-              <div style="background: #f8fafc; padding: 12px; border-radius: 6px; border: 1px solid #e2e8f0;">
-                <div style="font-weight: 800; font-size: 0.75rem; color: #64748b; text-transform: uppercase; margin-bottom: 4px;">CUSTOMER DETAILS</div>
-                <div style="font-weight: 800; font-size: 0.95rem; color: #0f172a;">${order.customer_name || 'Guest'}</div>
-                <div style="color: #334155; margin-top: 2px;">📞 ${order.customer_phone || '-'}</div>
-                ${order.customer_email ? `<div style="color: #64748b; font-size: 0.8rem;">✉️ ${order.customer_email}</div>` : ''}
+              <!-- CUSTOMER & SHIPPING INFO -->
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px; font-size: 0.85rem;">
+                <div style="background: #f8fafc; padding: 12px; border-radius: 6px; border: 1px solid #e2e8f0;">
+                  <div style="font-weight: 800; font-size: 0.75rem; color: #64748b; text-transform: uppercase; margin-bottom: 4px;">CUSTOMER DETAILS</div>
+                  <div style="font-weight: 800; font-size: 0.95rem; color: #0f172a;">${order.customer_name || 'Guest'}</div>
+                  <div style="color: #334155; margin-top: 2px;">📞 ${order.customer_phone || '-'}</div>
+                  ${order.customer_email ? `<div style="color: #64748b; font-size: 0.8rem;">✉️ ${order.customer_email}</div>` : ''}
+                </div>
+
+                <div style="background: #f8fafc; padding: 12px; border-radius: 6px; border: 1px solid #e2e8f0;">
+                  <div style="font-weight: 800; font-size: 0.75rem; color: #64748b; text-transform: uppercase; margin-bottom: 4px;">DELIVERY ADDRESS</div>
+                  <div style="color: #0f172a; line-height: 1.4;">${addrText}</div>
+                </div>
               </div>
 
-              <div style="background: #f8fafc; padding: 12px; border-radius: 6px; border: 1px solid #e2e8f0;">
-                <div style="font-weight: 800; font-size: 0.75rem; color: #64748b; text-transform: uppercase; margin-bottom: 4px;">DELIVERY ADDRESS</div>
-                <div style="color: #0f172a; line-height: 1.4;">${addrText}</div>
-              </div>
-            </div>
-
-            <!-- ORDERED ITEMS BREAKDOWN -->
-            <table class="invoice-table">
-              <thead>
-                <tr>
-                  <th>Product Item</th>
-                  <th style="text-align: center;">Size</th>
-                  <th style="text-align: center;">Qty</th>
-                  <th style="text-align: right;">Unit Price</th>
-                  <th style="text-align: right;">Total</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${items.map(item => `
+              <!-- ORDERED ITEMS BREAKDOWN -->
+              <table class="invoice-table">
+                <thead>
                   <tr>
-                    <td>
-                      <div style="display: flex; align-items: center; gap: 10px;">
-                        <img src="${item.image_url || 'images/logo.jpg'}" style="width: 40px; height: 40px; border-radius: 4px; object-fit: cover; border: 1px solid #ddd;" />
-                        <span style="font-weight: 700; color: #111;">${item.product_name || 'Item'}</span>
-                      </div>
-                    </td>
-                    <td style="text-align: center;">
-                      <span class="order-size-badge">SIZE: ${item.variant_size || 'M'}</span>
-                    </td>
-                    <td style="text-align: center; font-weight: 700;">${item.quantity || 1}</td>
-                    <td style="text-align: right;">₹${parseFloat(item.unit_price || item.total_price || 0).toFixed(2)}</td>
-                    <td style="text-align: right; font-weight: 800;">₹${parseFloat(item.total_price || (item.unit_price * item.quantity) || 0).toFixed(2)}</td>
+                    <th>Product Item</th>
+                    <th style="text-align: center;">Size</th>
+                    <th style="text-align: center;">Qty</th>
+                    <th style="text-align: right;">Unit Price</th>
+                    <th style="text-align: right;">Total</th>
                   </tr>
-                `).join('')}
-              </tbody>
-              <tfoot>
-                <tr>
-                  <td colspan="4" style="text-align: right; font-weight: 700; color: #666; border-top: 1px solid #e2e8f0;">Subtotal:</td>
-                  <td style="text-align: right; font-weight: 700; border-top: 1px solid #e2e8f0;">₹${parseFloat(order.subtotal || order.total_amount || 0).toFixed(2)}</td>
-                </tr>
-                ${parseFloat(order.discount_amount || 0) > 0 ? `
+                </thead>
+                <tbody>
+                  ${items.map(item => `
+                    <tr>
+                      <td>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                          <img src="${item.image_url || 'images/logo.jpg'}" style="width: 40px; height: 40px; border-radius: 4px; object-fit: cover; border: 1px solid #ddd;" />
+                          <span style="font-weight: 700; color: #111;">${item.product_name || 'Item'}</span>
+                        </div>
+                      </td>
+                      <td style="text-align: center;">
+                        <span class="order-size-badge">SIZE: ${item.variant_size || 'M'}</span>
+                      </td>
+                      <td style="text-align: center; font-weight: 700;">${item.quantity || 1}</td>
+                      <td style="text-align: right;">₹${parseFloat(item.unit_price || item.total_price || 0).toFixed(2)}</td>
+                      <td style="text-align: right; font-weight: 800;">₹${parseFloat(item.total_price || (item.unit_price * item.quantity) || 0).toFixed(2)}</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+                <tfoot>
                   <tr>
-                    <td colspan="4" style="text-align: right; font-weight: 700; color: #166534;">Discount (Coupon):</td>
-                    <td style="text-align: right; font-weight: 700; color: #166534;">-₹${parseFloat(order.discount_amount).toFixed(2)}</td>
+                    <td colspan="4" style="text-align: right; font-weight: 700; color: #666; border-top: 1px solid #e2e8f0;">Subtotal:</td>
+                    <td style="text-align: right; font-weight: 700; border-top: 1px solid #e2e8f0;">₹${parseFloat(order.subtotal || order.total_amount || 0).toFixed(2)}</td>
                   </tr>
-                ` : ''}
-                <tr>
-                  <td colspan="4" style="text-align: right; font-weight: 700; color: #666;">Shipping Fee:</td>
-                  <td style="text-align: right; font-weight: 700;">${parseFloat(order.shipping_fee || 0) === 0 ? 'FREE (₹0.00)' : '₹' + parseFloat(order.shipping_fee).toFixed(2)}</td>
-                </tr>
-                <tr>
-                  <td colspan="4" style="text-align: right; font-weight: 900; font-size: 1.05rem; color: #000; border-top: 2px solid #111;">TOTAL PAYABLE:</td>
-                  <td style="text-align: right; font-weight: 900; font-size: 1.05rem; color: #000; border-top: 2px solid #111;">₹${parseFloat(order.total_amount || 0).toFixed(2)}</td>
-                </tr>
-              </tfoot>
-            </table>
+                  ${parseFloat(order.discount_amount || 0) > 0 ? `
+                    <tr>
+                      <td colspan="4" style="text-align: right; font-weight: 700; color: #166534;">Discount (Coupon):</td>
+                      <td style="text-align: right; font-weight: 700; color: #166534;">-₹${parseFloat(order.discount_amount).toFixed(2)}</td>
+                    </tr>
+                  ` : ''}
+                  <tr>
+                    <td colspan="4" style="text-align: right; font-weight: 700; color: #666;">Shipping Fee:</td>
+                    <td style="text-align: right; font-weight: 700;">${parseFloat(order.shipping_fee || 0) === 0 ? 'FREE (₹0.00)' : '₹' + parseFloat(order.shipping_fee).toFixed(2)}</td>
+                  </tr>
+                  <tr>
+                    <td colspan="4" style="text-align: right; font-weight: 900; font-size: 1.05rem; color: #000; border-top: 2px solid #111;">TOTAL PAYABLE:</td>
+                    <td style="text-align: right; font-weight: 900; font-size: 1.05rem; color: #000; border-top: 2px solid #111;">₹${parseFloat(order.total_amount || 0).toFixed(2)}</td>
+                  </tr>
+                </tfoot>
+              </table>
 
-            <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 8px; font-size: 0.8rem; color: #666;">
-              <span>Payment Mode: <strong>ONLINE (CASHFREE)</strong> — Status: <strong style="color:${order.payment_status === 'PAID' ? '#166534' : '#991b1b'};">${order.payment_status === 'PAID' ? 'PAID ONLINE ✓' : (order.payment_status === 'FAILED' || order.order_status === 'CANCELLED' ? 'PAYMENT CANCELLED ✕' : 'PAYMENT PENDING ⏳')}</strong></span>
-              <span>Current Status: <strong>${order.order_status || 'PLACED'}</strong></span>
+              <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 8px; font-size: 0.8rem; color: #666;">
+                <span>Payment Mode: <strong>ONLINE (CASHFREE)</strong> — Status: <strong style="color:${order.payment_status === 'PAID' ? '#166534' : '#991b1b'};">${order.payment_status === 'PAID' ? 'PAID ONLINE ✓' : (order.payment_status === 'FAILED' || order.order_status === 'CANCELLED' ? 'PAYMENT CANCELLED ✕' : 'PAYMENT PENDING ⏳')}</strong></span>
+                <span>Current Status: <strong>${order.order_status || 'PLACED'}</strong></span>
+              </div>
             </div>
           </div>
         </div>
 
-        <!-- TRACKING DISPATCH & COURIER UPDATE (NO PRINT) -->
-        <div class="no-print" style="background: #f1f5f9; padding: 14px; border-radius: 6px; margin-bottom: 16px; border: 1px solid #cbd5e1;">
-          <div style="font-weight: 800; font-size: 0.8rem; margin-bottom: 8px; text-transform: uppercase;">📦 Courier & Tracking Details</div>
-          <div style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px;">
-            <input type="text" id="modalCourierName" class="form-control" style="padding: 7px 10px; font-size: 0.85rem;" placeholder="Courier (e.g. BlueDart, Delhivery)" value="${order.courier_name || ''}" />
-            <input type="text" id="modalTrackingNumber" class="form-control" style="padding: 7px 10px; font-size: 0.85rem;" placeholder="Tracking / AWB Number" value="${order.tracking_number || ''}" />
-            <button class="btn-admin" onclick="saveOrderTracking('${order.id}')" style="padding: 7px 14px; font-size: 0.8rem; background: #0077b6;">SAVE</button>
-          </div>
+        <!-- TAB 2: EDIT ORDER FORM -->
+        <div id="modalTabEditContent" style="display:none;" class="no-print">
+          <form onsubmit="event.preventDefault(); saveOrderEdit('${order.id}');" class="edit-form-grid">
+            <div class="edit-form-group">
+              <label>Customer Name</label>
+              <input type="text" id="editCustName" value="${order.customer_name || ''}" required />
+            </div>
+            <div class="edit-form-group">
+              <label>Customer Phone</label>
+              <input type="tel" id="editCustPhone" value="${order.customer_phone || ''}" required />
+            </div>
+            <div class="edit-form-group full-width">
+              <label>Customer Email</label>
+              <input type="email" id="editCustEmail" value="${order.customer_email || ''}" />
+            </div>
+            <div class="edit-form-group full-width">
+              <label>Street Address</label>
+              <input type="text" id="editCustAddress" value="${addrObj.address || ''}" />
+            </div>
+            <div class="edit-form-group">
+              <label>City</label>
+              <input type="text" id="editCustCity" value="${addrObj.city || ''}" />
+            </div>
+            <div class="edit-form-group">
+              <label>State</label>
+              <input type="text" id="editCustState" value="${addrObj.state || ''}" />
+            </div>
+            <div class="edit-form-group">
+              <label>Pincode</label>
+              <input type="text" id="editCustPincode" value="${addrObj.pincode || ''}" />
+            </div>
+            <div class="edit-form-group">
+              <label>Payment Status</label>
+              <select id="editPaymentStatus">
+                <option value="PAID" ${order.payment_status === 'PAID' ? 'selected' : ''}>PAID</option>
+                <option value="PENDING" ${order.payment_status === 'PENDING' ? 'selected' : ''}>PENDING</option>
+                <option value="FAILED" ${order.payment_status === 'FAILED' ? 'selected' : ''}>FAILED / CANCELLED</option>
+              </select>
+            </div>
+            <div class="edit-form-group">
+              <label>Order Status</label>
+              <select id="editOrderStatus">
+                <option value="PLACED" ${order.order_status === 'PLACED' ? 'selected' : ''}>Placed</option>
+                <option value="PROCESSING" ${order.order_status === 'PROCESSING' ? 'selected' : ''}>Processing</option>
+                <option value="SHIPPED" ${order.order_status === 'SHIPPED' ? 'selected' : ''}>Shipped</option>
+                <option value="DELIVERED" ${order.order_status === 'DELIVERED' ? 'selected' : ''}>Delivered</option>
+                <option value="CANCELLED" ${order.order_status === 'CANCELLED' ? 'selected' : ''}>Cancelled</option>
+              </select>
+            </div>
+            <div class="edit-form-group">
+              <label>Courier Name</label>
+              <input type="text" id="editCourierName" value="${order.courier_name || ''}" placeholder="e.g. BlueDart, Delhivery" />
+            </div>
+            <div class="edit-form-group">
+              <label>Tracking / AWB Number</label>
+              <input type="text" id="editTrackingNumber" value="${order.tracking_number || ''}" placeholder="Tracking number" />
+            </div>
+            <div class="edit-form-group full-width" style="margin-top: 10px;">
+              <button type="submit" class="btn-admin btn-admin-success" style="padding: 10px; font-weight: 800; font-size: 0.85rem; width: 100%;">
+                💾 SAVE ORDER CHANGES
+              </button>
+            </div>
+          </form>
         </div>
 
         <!-- ACTIONS BUTTON BAR (NO PRINT) -->
-        <div class="no-print" style="display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap;">
+        <div class="no-print" style="display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 18px; border-top: 1px solid #e2e8f0; padding-top: 14px;">
           <div style="display: flex; gap: 8px;">
             ${cleanPhone ? `
               <a href="${waLink}" target="_blank" class="btn-order-action btn-whatsapp" style="padding: 8px 14px; font-size: 0.82rem;">
@@ -643,37 +870,82 @@
               <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
               <span>PRINT PACKING SLIP</span>
             </button>
+            <button class="btn-admin" onclick="confirmDeleteOrder('${order.id}', '${order.order_number}')" style="background: #dc2626; border: 1px solid #b91c1c; color: #fff; padding: 8px 14px; font-size: 0.82rem;">
+              🗑️ DELETE ORDER
+            </button>
             <button class="btn-admin" onclick="closeOrderModal()" style="background: #444; padding: 8px 14px; font-size: 0.82rem;">CLOSE</button>
           </div>
         </div>
       `;
 
       document.getElementById('modalOrderBody').innerHTML = bodyHtml;
+      setModalTab('SLIP');
       document.getElementById('orderDetailModal').classList.add('active');
     }
 
-    async function saveOrderTracking(orderId) {
-      const courier = document.getElementById('modalCourierName').value.trim();
-      const tracking = document.getElementById('modalTrackingNumber').value.trim();
+    async function saveOrderEdit(orderId) {
+      const name = document.getElementById('editCustName').value.trim();
+      const phone = document.getElementById('editCustPhone').value.trim();
+      const email = document.getElementById('editCustEmail').value.trim();
+      const address = document.getElementById('editCustAddress').value.trim();
+      const city = document.getElementById('editCustCity').value.trim();
+      const state = document.getElementById('editCustState').value.trim();
+      const pincode = document.getElementById('editCustPincode').value.trim();
+      const paymentStatus = document.getElementById('editPaymentStatus').value;
+      const orderStatus = document.getElementById('editOrderStatus').value;
+      const courier = document.getElementById('editCourierName').value.trim();
+      const tracking = document.getElementById('editTrackingNumber').value.trim();
 
-      if (typeof window.updateAdminOrderTracking === 'function') {
-        const { data, error } = await window.updateAdminOrderTracking(orderId, courier, tracking);
+      const updatePayload = {
+        customer_name: name,
+        customer_phone: phone,
+        customer_email: email,
+        shipping_address: {
+          address: address,
+          city: city,
+          state: state,
+          pincode: pincode
+        },
+        payment_status: paymentStatus,
+        order_status: orderStatus,
+        courier_name: courier || null,
+        tracking_number: tracking || null
+      };
+
+      if (typeof window.updateAdminOrderDetails === 'function') {
+        const { data, error } = await window.updateAdminOrderDetails(orderId, updatePayload);
         if (error) {
-          window.adminToast('Error updating tracking: ' + error.message, true);
-        } else {
-          window.adminToast('✓ Courier tracking details saved!');
-          const idx = allOrdersData.findIndex(o => o.id === orderId);
-          if (idx > -1) {
-            allOrdersData[idx].courier_name = courier;
-            allOrdersData[idx].tracking_number = tracking;
+          window.adminToast('Error saving changes: ' + error.message, true);
+          return;
+        }
+      } else {
+        const client = window.urSbClient || window.adminSupabase;
+        if (client) {
+          const { error } = await client.from('orders').update({ ...updatePayload, updated_at: new Date().toISOString() }).eq('id', orderId);
+          if (error) {
+            window.adminToast('Error saving changes: ' + error.message, true);
+            return;
           }
         }
       }
+
+      window.adminToast('✓ Order details updated successfully!');
+
+      // Update local memory
+      const idx = allOrdersData.findIndex(o => o.id === orderId);
+      if (idx > -1) {
+        allOrdersData[idx] = { ...allOrdersData[idx], ...updatePayload };
+        updateMetricsAndFilterCounts();
+        filterAndRenderOrders();
+      }
+
+      closeOrderModal();
     }
 
     function closeOrderModal(event) {
       if (event && event.target !== event.currentTarget) return;
       document.getElementById('orderDetailModal').classList.remove('active');
+      currentEditingOrderId = null;
     }
 
     document.addEventListener('DOMContentLoaded', function() {

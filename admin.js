@@ -217,8 +217,24 @@
         .update({ 
           courier_name: courierName || null, 
           tracking_number: trackingNumber || null,
-          updated_at: new Date() 
+          updated_at: new Date().toISOString() 
         })
+        .eq('id', orderId)
+        .select()
+        .single();
+      return { data, error };
+    } catch (err) {
+      return { error: err };
+    }
+  };
+
+  window.updateAdminOrderDetails = async function(orderId, updatePayload) {
+    const client = window.urSbClient || window.adminSupabase || createAdminSupabaseClient();
+    if (!client) return { error: { message: 'Supabase not initialized' } };
+    try {
+      const { data, error } = await client
+        .from('orders')
+        .update({ ...updatePayload, updated_at: new Date().toISOString() })
         .eq('id', orderId)
         .select()
         .single();
@@ -232,7 +248,11 @@
     const client = window.urSbClient || window.adminSupabase || createAdminSupabaseClient();
     if (!client) return { error: { message: 'Supabase not initialized' } };
     try {
-      // Cascade deletes order_items automatically via foreign key
+      // 1. Delete associated order_items and payments if present
+      await client.from('order_items').delete().eq('order_id', orderId);
+      await client.from('payments').delete().eq('order_id', orderId);
+
+      // 2. Delete the order record
       const { data, error } = await client
         .from('orders')
         .delete()

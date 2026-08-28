@@ -121,11 +121,11 @@ a {
   bottom: 0;
   width: 320px;
   max-width: 85vw;
-  background: #111111;
-  color: #ffffff;
+  background: #ffffff;
+  color: #0f172a;
   display: flex;
   flex-direction: column;
-  box-shadow: 4px 0 25px rgba(0, 0, 0, 0.4);
+  box-shadow: 4px 0 30px rgba(0, 0, 0, 0.3);
   transform: translateX(-100%);
   transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -137,28 +137,30 @@ a {
   align-items: center;
   justify-content: space-between;
   padding: 16px 18px;
-  border-bottom: 1px solid #222222;
-  background: #161616;
+  border-bottom: 2px solid #e2e8f0;
+  background: #f8fafc;
 }
 .drawer-title {
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   font-weight: 900;
   letter-spacing: 1px;
-  color: #ffffff;
+  color: #0f172a;
 }
 .drawer-close-btn {
-  background: none;
-  border: none;
-  color: #aaaaaa;
-  font-size: 1.1rem;
-  font-weight: 700;
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  color: #0f172a;
+  font-size: 1rem;
+  font-weight: 800;
   cursor: pointer;
-  padding: 4px 8px;
-  border-radius: 4px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  transition: all 0.15s ease;
 }
 .drawer-close-btn:hover {
   color: #ffffff;
-  background: #262626;
+  background: #0f172a;
+  border-color: #0f172a;
 }
 .drawer-scroll-body {
   flex: 1;
@@ -167,20 +169,21 @@ a {
   display: flex;
   flex-direction: column;
   gap: 18px;
+  background: #ffffff;
 }
 .drawer-menu-section {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 5px;
 }
 .drawer-section-heading {
-  font-size: 0.68rem;
-  font-weight: 800;
-  letter-spacing: 1.2px;
+  font-size: 0.74rem;
+  font-weight: 900;
+  letter-spacing: 1.3px;
   text-transform: uppercase;
-  color: #888888;
-  padding: 0 10px 6px;
-  border-bottom: 1px solid #222222;
+  color: #0f172a !important; /* DARK BLACK SECTION HEADER */
+  padding: 0 8px 6px;
+  border-bottom: 2px solid #e2e8f0;
   margin-bottom: 4px;
 }
 .drawer-nav-item {
@@ -189,45 +192,78 @@ a {
   gap: 12px;
   padding: 10px 12px;
   border-radius: 6px;
-  color: #d1d5db;
-  font-size: 0.85rem;
-  font-weight: 700;
+  color: #0f172a !important; /* DARK BLACK ITEM TEXT */
+  font-size: 0.88rem;
+  font-weight: 800;
   text-decoration: none;
-  background: transparent;
-  border: none;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
   width: 100%;
   text-align: left;
   cursor: pointer;
   transition: all 0.15s ease;
 }
 .drawer-nav-item:hover {
-  background: #222222;
-  color: #ffffff;
+  background: #0f172a;
+  color: #ffffff !important;
+  border-color: #0f172a;
   transform: translateX(3px);
 }
+.drawer-nav-item:hover .drawer-icon {
+  stroke: #ffffff !important;
+  color: #ffffff !important;
+}
 .drawer-nav-item.active {
-  background: var(--accent-red);
-  color: #ffffff;
+  background: var(--accent-red) !important;
+  color: #ffffff !important;
+  border-color: var(--accent-red) !important;
+}
+.drawer-nav-item.active .drawer-icon {
+  stroke: #ffffff !important;
+  color: #ffffff !important;
 }
 .drawer-nav-item.highlight-item {
-  color: #fbbf24;
+  background: #fefce8;
+  color: #92400e !important;
+  border-color: #fde047;
+}
+.drawer-nav-item.highlight-item .drawer-icon {
+  stroke: #b45309 !important;
+  color: #b45309 !important;
+}
+.drawer-nav-item.highlight-item:hover {
+  background: #0f172a;
+  color: #ffffff !important;
+  border-color: #0f172a;
+}
+.drawer-nav-item.highlight-item:hover .drawer-icon {
+  stroke: #ffffff !important;
+  color: #ffffff !important;
 }
 .drawer-icon {
-  width: 18px;
-  height: 18px;
-  stroke: currentColor;
-  stroke-width: 2;
+  width: 20px;
+  height: 20px;
+  stroke: #0f172a !important; /* DARK BLACK SVG ICONS */
+  color: #0f172a !important;
+  stroke-width: 2.3;
   fill: none;
   flex-shrink: 0;
+  transition: stroke 0.15s ease;
 }
 .btn-push-drawer {
-  background: #0077b6;
-  color: #ffffff;
+  background: #0f172a;
+  color: #ffffff !important;
+  border-color: #0f172a;
   margin-top: 6px;
+}
+.btn-push-drawer .drawer-icon {
+  stroke: #ffffff !important;
+  color: #ffffff !important;
 }
 .btn-push-drawer:hover {
   background: #0284c7;
-  color: #ffffff;
+  border-color: #0284c7;
+  color: #ffffff !important;
 }
 
 /* DESKTOP NAV TABS */

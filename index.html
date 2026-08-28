@@ -110,21 +110,22 @@
     <div>
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
         <h3 style="font-size: 1.1rem; font-weight: 800; text-transform: uppercase;">RECENT ORDERS</h3>
-        <a href="orders.html" style="font-size: 0.85rem; font-weight: 800; color: var(--accent-red);">VIEW ALL →</a>
+        <a href="orders.html" style="font-size: 0.85rem; font-weight: 800; color: var(--accent-red);">VIEW ALL ORDERS →</a>
       </div>
       <div class="admin-table-wrapper">
         <table class="admin-table">
           <thead>
             <tr>
-              <th>Order ID</th>
+              <th>Order ID & Date</th>
               <th>Customer</th>
+              <th>Ordered Item & Size</th>
               <th>Total Amount</th>
               <th>Status</th>
-              <th>Date</th>
+              <th style="text-align: center;">Action</th>
             </tr>
           </thead>
           <tbody id="recentOrdersBody">
-            <tr><td colspan="5" style="text-align: center; color: #999;">Loading dashboard data...</td></tr>
+            <tr><td colspan="6" style="text-align: center; color: #999;">Loading dashboard data...</td></tr>
           </tbody>
         </table>
       </div>
@@ -205,17 +206,52 @@
           const rev = orders.reduce((sum, o) => sum + parseFloat(o.total_amount || 0), 0);
           document.getElementById('totalRevenueVal').textContent = `₹${rev.toFixed(2)}`;
 
-          ordersTbody.innerHTML = orders.slice(0, 6).map(o => `
-            <tr>
-              <td><strong>${o.order_number}</strong></td>
-              <td>${o.customer_name}<br><small style="color:#666;">${o.customer_phone}</small></td>
-              <td>₹${o.total_amount}</td>
-              <td><span class="status-badge badge-placed">${o.order_status || 'PLACED'}</span></td>
-              <td><small>${new Date(o.created_at).toLocaleDateString()}</small></td>
-            </tr>
-          `).join('');
+          ordersTbody.innerHTML = orders.slice(0, 8).map(o => {
+            const dateStr = new Date(o.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+            const items = o.order_items || [];
+            let itemsHtml = '<span style="color:#999; font-size: 0.8rem;">Item snapshot</span>';
+            if (items.length > 0) {
+              const first = items[0];
+              const extraCount = items.length - 1;
+              itemsHtml = `
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <img src="${first.image_url || 'images/logo.jpg'}" style="width: 38px; height: 38px; border-radius: 4px; object-fit: cover; border: 1px solid #ddd;" onerror="this.src='images/logo.jpg'" />
+                  <div style="display: flex; flex-direction: column; gap: 2px;">
+                    <div style="font-weight: 800; font-size: 0.82rem; color: #111; max-width: 180px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${first.product_name}</div>
+                    <div style="display: flex; align-items: center; gap: 4px;">
+                      <span class="order-size-badge" style="font-size: 0.65rem; padding: 1px 5px;">SIZE: ${first.variant_size || 'M'}</span>
+                      <span style="font-size: 0.72rem; color: #666;">Qty: ${first.quantity || 1}</span>
+                      ${extraCount > 0 ? `<span style="font-size: 0.7rem; font-weight: 700; color: #0077b6;">+${extraCount} more</span>` : ''}
+                    </div>
+                  </div>
+                </div>
+              `;
+            }
+
+            const status = o.order_status || 'PLACED';
+            const badgeClass = `badge-${status.toLowerCase()}`;
+
+            return `
+              <tr>
+                <td>
+                  <strong>${o.order_number}</strong>
+                  <div style="font-size: 0.75rem; color: #888;">${dateStr}</div>
+                </td>
+                <td>
+                  <strong>${o.customer_name || 'Customer'}</strong>
+                  <div style="font-size: 0.75rem; color: #666;">${o.customer_phone || ''}</div>
+                </td>
+                <td>${itemsHtml}</td>
+                <td><strong>₹${parseFloat(o.total_amount || 0).toFixed(0)}</strong></td>
+                <td><span class="status-badge ${badgeClass}">${status}</span></td>
+                <td style="text-align: center;">
+                  <a href="orders.html" class="btn-admin" style="padding: 4px 8px; font-size: 0.75rem; background: #222;">MANAGE</a>
+                </td>
+              </tr>
+            `;
+          }).join('');
         } else {
-          ordersTbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #999;">No orders found.</td></tr>';
+          ordersTbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #999;">No orders found.</td></tr>';
         }
 
         // Fetch User Profiles count

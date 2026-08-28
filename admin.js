@@ -153,21 +153,93 @@
     }
   };
 
-  // 7. FETCH ADMIN ORDERS ROUTINE
+  // 7. FETCH ADMIN ORDERS ROUTINE WITH ORDER ITEMS (PRODUCTS & SIZES)
   window.fetchAdminOrders = async function() {
     const client = window.urSbClient || window.adminSupabase || createAdminSupabaseClient();
     if (!client) {
       return { data: [], error: { message: 'Supabase client not initialized' } };
     }
     try {
-      const { data, error } = await client
+      let { data, error } = await client
         .from('orders')
-        .select('*')
+        .select('*, order_items(*)')
         .order('created_at', { ascending: false });
+
+      // Fallback: If relation query encounters any issue, fetch orders & order_items separately and merge
+      if (error || !data) {
+        console.warn('Nested order_items query failed or returned error, executing fallback merge query:', error);
+        const ordersRes = await client
+          .from('orders')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (ordersRes.data) {
+          const itemsRes = await client.from('order_items').select('*');
+          const items = itemsRes.data || [];
+          data = ordersRes.data.map(order => ({
+            ...order,
+            order_items: items.filter(item => item.order_id === order.id)
+          }));
+          error = null;
+        } else {
+          return { data: [], error: ordersRes.error };
+        }
+      }
       return { data: data || [], error };
     } catch (err) {
       console.error('fetchAdminOrders error:', err);
       return { data: [], error: err };
+    }
+  };
+
+  window.updateAdminOrderStatus = async function(orderId, status) {
+    const client = window.urSbClient || window.adminSupabase || createAdminSupabaseClient();
+    if (!client) return { error: { message: 'Supabase not initialized' } };
+    try {
+      const { data, error } = await client
+        .from('orders')
+        .update({ order_status: status, updated_at: new Date() })
+        .eq('id', orderId)
+        .select()
+        .single();
+      return { data, error };
+    } catch (err) {
+      return { error: err };
+    }
+  };
+
+  window.updateAdminOrderTracking = async function(orderId, courierName, trackingNumber) {
+    const client = window.urSbClient || window.adminSupabase || createAdminSupabaseClient();
+    if (!client) return { error: { message: 'Supabase not initialized' } };
+    try {
+      const { data, error } = await client
+        .from('orders')
+        .update({ 
+          courier_name: courierName || null, 
+          tracking_number: trackingNumber || null,
+          updated_at: new Date() 
+        })
+        .eq('id', orderId)
+        .select()
+        .single();
+      return { data, error };
+    } catch (err) {
+      return { error: err };
+    }
+  };
+
+  window.deleteAdminOrder = async function(orderId) {
+    const client = window.urSbClient || window.adminSupabase || createAdminSupabaseClient();
+    if (!client) return { error: { message: 'Supabase not initialized' } };
+    try {
+      // Cascade deletes order_items automatically via foreign key
+      const { data, error } = await client
+        .from('orders')
+        .delete()
+        .eq('id', orderId);
+      return { data, error };
+    } catch (err) {
+      return { error: err };
     }
   };
 

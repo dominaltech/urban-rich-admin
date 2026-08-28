@@ -823,3 +823,289 @@ a {
   color: #000;
 }
 
+/* ==========================================================================
+   CUSTOMER ORDERS MANAGEMENT RICH STYLES
+   ========================================================================== */
+
+.orders-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+}
+@media (min-width: 768px) {
+  .orders-stats-grid {
+    grid-template-columns: repeat(5, 1fr);
+    gap: 16px;
+  }
+}
+
+.order-stat-card {
+  background: #ffffff;
+  padding: 16px 18px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-light);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.order-stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+.order-stat-label {
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+.order-stat-val {
+  font-size: 1.45rem;
+  font-weight: 900;
+  color: #111;
+}
+
+/* SEARCH & FILTER CONTROLS */
+.orders-filter-container {
+  background: #ffffff;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-light);
+  padding: 16px;
+  margin-bottom: 20px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+@media (min-width: 900px) {
+  .orders-filter-container {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.order-search-box {
+  position: relative;
+  flex: 1;
+  max-width: 420px;
+}
+.order-search-box input {
+  width: 100%;
+  padding: 10px 14px 10px 38px;
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+.order-search-box input:focus {
+  border-color: #111;
+}
+.order-search-box svg {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #888;
+}
+
+.order-filter-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+.filter-chip-btn {
+  padding: 7px 14px;
+  border-radius: 20px;
+  border: 1px solid var(--border-medium);
+  background: #f8f9fa;
+  color: #555;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.filter-chip-btn:hover {
+  background: #e9ecef;
+  color: #111;
+}
+.filter-chip-btn.active {
+  background: #111111;
+  color: #ffffff;
+  border-color: #111111;
+}
+
+/* ORDER PRODUCTS CELL STYLES */
+.order-products-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 260px;
+  max-width: 380px;
+}
+
+.order-product-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px;
+  background: #fafbfc;
+  border: 1px solid #edf0f2;
+  border-radius: 6px;
+}
+
+.order-product-thumb {
+  width: 52px;
+  height: 52px;
+  border-radius: 4px;
+  object-fit: cover;
+  background: #eee;
+  border: 1px solid #e2e8f0;
+  flex-shrink: 0;
+}
+
+.order-product-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+  min-width: 0;
+}
+
+.order-product-name {
+  font-weight: 800;
+  font-size: 0.85rem;
+  color: #111;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.order-product-tags {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.order-size-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 7px;
+  background: #111111;
+  color: #ffffff;
+  font-weight: 900;
+  font-size: 0.72rem;
+  border-radius: 3px;
+  letter-spacing: 0.5px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+}
+
+.order-qty-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 6px;
+  background: #e2e8f0;
+  color: #334155;
+  font-weight: 700;
+  font-size: 0.72rem;
+  border-radius: 3px;
+}
+
+.order-price-pill {
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+/* CUSTOMER CELL & ACTIONS */
+.customer-card-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 170px;
+}
+.customer-name-row {
+  font-weight: 800;
+  font-size: 0.9rem;
+  color: #111;
+}
+.customer-actions-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.btn-order-action {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  text-decoration: none;
+  cursor: pointer;
+  border: none;
+  transition: opacity 0.2s ease;
+}
+.btn-order-action:hover {
+  opacity: 0.85;
+}
+.btn-whatsapp {
+  background: #25d366;
+  color: #ffffff;
+}
+.btn-call {
+  background: #0077b6;
+  color: #ffffff;
+}
+
+/* ENHANCED STATUS BADGES */
+.badge-placed { background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
+.badge-processing { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+.badge-shipped { background: #f3e8ff; color: #6b21a8; border: 1px solid #e9d5ff; }
+.badge-delivered { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+.badge-cancelled { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+
+.badge-paid { background: #15803d; color: #ffffff; padding: 2px 6px; font-size: 0.65rem; border-radius: 3px; font-weight: 800; }
+.badge-cod { background: #d97706; color: #ffffff; padding: 2px 6px; font-size: 0.65rem; border-radius: 3px; font-weight: 800; }
+
+/* INVOICE & ORDER DETAILS MODAL */
+.order-detail-modal-card {
+  max-width: 680px;
+}
+.invoice-box {
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 18px;
+  background: #ffffff;
+  margin-bottom: 16px;
+}
+.invoice-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 14px 0;
+}
+.invoice-table th {
+  background: #f8fafc;
+  padding: 8px 10px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-align: left;
+  border-bottom: 1px solid #e2e8f0;
+}
+.invoice-table td {
+  padding: 10px;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 0.85rem;
+  vertical-align: middle;
+}
+
+

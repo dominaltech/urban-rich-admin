@@ -254,14 +254,12 @@
       const delivered = allOrdersData.filter(o => o.order_status === 'DELIVERED').length;
       const cancelled = allOrdersData.filter(o => (
         o.order_status === 'CANCELLED' || 
-        o.order_status === 'PAYMENT_CANCELLED' || 
-        o.payment_status === 'CANCELLED' || 
         o.payment_status === 'FAILED'
       )).length;
 
       const totalRevenue = allOrdersData.reduce((sum, o) => {
         const isPaid = (o.payment_status === 'PAID');
-        const isNotCancelled = o.order_status !== 'CANCELLED' && o.order_status !== 'PAYMENT_CANCELLED';
+        const isNotCancelled = o.order_status !== 'CANCELLED';
         if (isPaid && isNotCancelled) {
           return sum + parseFloat(o.total_amount || 0);
         }
@@ -300,8 +298,6 @@
         if (currentStatusFilter === 'CANCELLED') {
           filtered = filtered.filter(o => (
             o.order_status === 'CANCELLED' || 
-            o.order_status === 'PAYMENT_CANCELLED' || 
-            o.payment_status === 'CANCELLED' || 
             o.payment_status === 'FAILED'
           ));
         } else {
@@ -352,10 +348,8 @@
         let paymentBadge = '';
         if (payStatus === 'PAID') {
           paymentBadge = `<span class="badge-paid" style="background:#15803d;color:#ffffff;padding:3px 7px;font-size:0.68rem;border-radius:4px;font-weight:800;letter-spacing:0.5px;display:inline-block;">PAID ONLINE ✓</span>`;
-        } else if (payStatus === 'CANCELLED' || o.order_status === 'PAYMENT_CANCELLED') {
+        } else if (payStatus === 'FAILED' || o.order_status === 'CANCELLED') {
           paymentBadge = `<span class="badge-cancelled" style="background:#fee2e2;color:#991b1b;border:1px solid #fecaca;padding:3px 7px;font-size:0.68rem;border-radius:4px;font-weight:800;letter-spacing:0.5px;display:inline-block;">PAYMENT CANCELLED ✕</span>`;
-        } else if (payStatus === 'FAILED') {
-          paymentBadge = `<span class="badge-cancelled" style="background:#fee2e2;color:#991b1b;border:1px solid #fecaca;padding:3px 7px;font-size:0.68rem;border-radius:4px;font-weight:800;letter-spacing:0.5px;display:inline-block;">PAYMENT FAILED ✕</span>`;
         } else {
           paymentBadge = `<span class="badge-processing" style="background:#fef3c7;color:#92400e;border:1px solid #fde68a;padding:3px 7px;font-size:0.68rem;border-radius:4px;font-weight:800;letter-spacing:0.5px;display:inline-block;">PAYMENT PENDING ⏳</span>`;
         }
@@ -375,7 +369,7 @@
         }
 
         // WhatsApp direct link with smart context
-        const isCancelled = (payStatus === 'CANCELLED' || payStatus === 'FAILED' || o.order_status === 'PAYMENT_CANCELLED');
+        const isCancelled = (payStatus === 'FAILED' || o.order_status === 'CANCELLED');
         const cleanPhone = sanitizePhoneForWhatsApp(o.customer_phone);
         const waMsg = isCancelled 
           ? `Hello ${o.customer_name || 'Customer'}! We noticed your Urban Rich order attempt #${orderNum} for ₹${o.total_amount} was not completed. Would you like any help with completing your purchase?`
@@ -467,7 +461,7 @@
                   <option value="PROCESSING" ${status === 'PROCESSING' ? 'selected' : ''}>Processing</option>
                   <option value="SHIPPED" ${status === 'SHIPPED' ? 'selected' : ''}>Shipped</option>
                   <option value="DELIVERED" ${status === 'DELIVERED' ? 'selected' : ''}>Delivered</option>
-                  <option value="CANCELLED" ${status === 'CANCELLED' || status === 'PAYMENT_CANCELLED' ? 'selected' : ''}>Cancelled / Unpaid</option>
+                  <option value="CANCELLED" ${status === 'CANCELLED' ? 'selected' : ''}>Cancelled</option>
                 </select>
               </div>
             </td>
@@ -525,7 +519,7 @@
       }
 
       const cleanPhone = sanitizePhoneForWhatsApp(order.customer_phone);
-      const isCancelled = (order.payment_status === 'CANCELLED' || order.payment_status === 'FAILED' || order.order_status === 'PAYMENT_CANCELLED');
+      const isCancelled = (order.payment_status === 'FAILED' || order.order_status === 'CANCELLED');
       const waMsg = isCancelled
         ? `Hello ${order.customer_name || 'Customer'}, we noticed your order #${order.order_number} for ₹${order.total_amount} wasn't completed. Let us know if you need assistance!`
         : `Hello ${order.customer_name || 'Customer'}, here is an update on your Urban Rich order #${order.order_number}...`;
@@ -618,7 +612,7 @@
             </table>
 
             <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 8px; font-size: 0.8rem; color: #666;">
-              <span>Payment Mode: <strong>ONLINE (CASHFREE)</strong> — Status: <strong style="color:${order.payment_status === 'PAID' ? '#166534' : '#991b1b'};">${order.payment_status === 'PAID' ? 'PAID ONLINE ✓' : (order.payment_status === 'CANCELLED' ? 'PAYMENT CANCELLED ✕' : 'PAYMENT PENDING ⏳')}</strong></span>
+              <span>Payment Mode: <strong>ONLINE (CASHFREE)</strong> — Status: <strong style="color:${order.payment_status === 'PAID' ? '#166534' : '#991b1b'};">${order.payment_status === 'PAID' ? 'PAID ONLINE ✓' : (order.payment_status === 'FAILED' || order.order_status === 'CANCELLED' ? 'PAYMENT CANCELLED ✕' : 'PAYMENT PENDING ⏳')}</strong></span>
               <span>Current Status: <strong>${order.order_status || 'PLACED'}</strong></span>
             </div>
           </div>

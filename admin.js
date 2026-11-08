@@ -354,6 +354,92 @@
     }
   };
 
+  // 8.5 DYNAMIC HOMEPAGE OFFER BANNER ROUTINES
+  window.fetchAdminOfferBanner = async function() {
+    const client = window.urSbClient || window.adminSupabase || createAdminSupabaseClient();
+    if (!client) return { data: null, error: { message: 'Supabase not initialized' } };
+    try {
+      const { data, error } = await client
+        .from('offer_banners')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      return { data, error };
+    } catch (err) {
+      console.error('fetchAdminOfferBanner error:', err);
+      return { data: null, error: err };
+    }
+  };
+
+  window.saveAdminOfferBanner = async function(bannerData) {
+    const client = window.urSbClient || window.adminSupabase || createAdminSupabaseClient();
+    if (!client) return { error: { message: 'Supabase not initialized' } };
+    try {
+      const cleanPayload = {
+        title: bannerData.title || 'Special Festive Offer',
+        badge_tag: bannerData.badge_tag || '✨ SPECIAL EVENT OFFER',
+        theme: bannerData.theme || 'diwali',
+        items: Array.isArray(bannerData.items) ? bannerData.items : [],
+        contact_number: bannerData.contact_number || '',
+        show_contact: bannerData.show_contact !== false,
+        is_active: !!bannerData.is_active,
+        updated_at: new Date().toISOString()
+      };
+
+      let res;
+      if (bannerData.id) {
+        cleanPayload.id = bannerData.id;
+        res = await client
+          .from('offer_banners')
+          .update(cleanPayload)
+          .eq('id', bannerData.id)
+          .select()
+          .single();
+      } else {
+        res = await client
+          .from('offer_banners')
+          .insert([cleanPayload])
+          .select()
+          .single();
+      }
+      return res;
+    } catch (err) {
+      return { error: err };
+    }
+  };
+
+  window.getActiveHomeCoupon = async function() {
+    const client = window.urSbClient || window.adminSupabase || createAdminSupabaseClient();
+    if (!client) return null;
+    try {
+      const { data } = await client
+        .from('coupons')
+        .select('*')
+        .eq('is_active', true)
+        .eq('show_home_banner', true)
+        .limit(1)
+        .maybeSingle();
+      return data || null;
+    } catch (err) {
+      return null;
+    }
+  };
+
+  window.disableHomeCoupons = async function() {
+    const client = window.urSbClient || window.adminSupabase || createAdminSupabaseClient();
+    if (!client) return { error: 'Client not ready' };
+    try {
+      const { data, error } = await client
+        .from('coupons')
+        .update({ show_home_banner: false, updated_at: new Date().toISOString() })
+        .eq('show_home_banner', true);
+      return { data, error };
+    } catch(err) {
+      return { error: err };
+    }
+  };
+
   // 9. FETCH PRODUCT GALLERY IMAGES
   window.fetchProductImages = async function(productId) {
     const client = window.urSbClient || window.adminSupabase || createAdminSupabaseClient();

@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Offer Banner Management — Urban Rich Admin</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="images/logo.jpg" type="image/jpeg">
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="admin.js"></script>
+  <style>
+    .banner-preview-card {
+      padding: 18px 24px;
+      border-radius: 8px;
+      margin-bottom: 24px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+      transition: all 0.3s ease;
+    }
+    
+    /* THEME PREVIEWS */
+    .theme-preview-diwali {
+      background: linear-gradient(135deg, #1c0a00 0%, #431407 50%, #1c0a00 100%);
+      border: 1px solid rgba(249, 115, 22, 0.4);
+      color: #fff;
+    }
+    .theme-preview-eid {
+      background: linear-gradient(135deg, #022c22 0%, #064e3b 50%, #022c22 100%);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      color: #fff;
+    }
+    .theme-preview-christmas {
+      background: linear-gradient(135deg, #450a0a 0%, #7f1d1d 50%, #1f0404 100%);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      color: #fff;
+    }
+    .theme-preview-black_friday {
+      background: linear-gradient(135deg, #09090b 0%, #18181b 50%, #09090b 100%);
+      border: 1px solid rgba(168, 85, 247, 0.4);
+      color: #fff;
+    }
+    .theme-preview-royal {
+      background: linear-gradient(135deg, #1e1b4b 0%, #2e1065 50%, #170d30 100%);
+      border: 1px solid rgba(216, 180, 254, 0.35);
+      color: #fff;
+    }
+
+    .theme-radio-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 10px;
+      margin-top: 6px;
+    }
+    .theme-radio-card {
+      border: 2px solid var(--border-light);
+      border-radius: 6px;
+      padding: 10px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      background: #fafafa;
+      transition: all 0.2s;
+    }
+    .theme-radio-card:hover {
+      border-color: #999;
+    }
+    .theme-radio-card.active {
+      border-color: #111;
+      background: #fff;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .theme-swatch {
+      height: 16px;
+      border-radius: 3px;
+      width: 100%;
+    }
+
+    .offer-items-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    .offer-items-table th, .offer-items-table td {
+      padding: 8px 10px;
+      border-bottom: 1px solid #e2e8f0;
+      font-size: 0.85rem;
+    }
+    .offer-items-table th {
+      background: #f8fafc;
+      font-weight: 800;
+      color: #475569;
+      text-transform: uppercase;
+      font-size: 0.75rem;
+    }
+
+    .form-group-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #f8fafc;
+      padding: 12px 16px;
+      border-radius: 6px;
+      border: 1px solid #e2e8f0;
+      margin-top: 8px;
+    }
+    .form-group-toggle label {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #1e293b;
+      margin: 0;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <!-- HEADER -->
+  <header class="admin-header">
+    <div class="header-left">
+      <button class="menu-trigger-btn" onclick="openDrawer()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+      <div class="brand-logo"><img src="images/logo.jpg" alt="Urban Rich Logo"><span class="brand-name">URBAN RICH ADMIN</span></div>
+    </div>
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <a href="coupons.html" class="btn-admin" style="font-size: 0.8rem; padding: 7px 14px; background:#222;">
+        <span>🎟️ COUPONS &amp; BANNERS</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- DESKTOP NAV TABS -->
+  <nav class="admin-nav-tabs">
+    <a href="index.html" class="admin-nav-tab">Dashboard</a>
+    <a href="orders.html" class="admin-nav-tab">Orders</a>
+    <a href="coupons.html" class="admin-nav-tab">🎟️ Coupons &amp; Banners</a>
+    <a href="offer-banner.html" class="admin-nav-tab active">🏷️ Offer Banner</a>
+    <a href="all-products.html" class="admin-nav-tab">All Products</a>
+    <a href="categories.html" class="admin-nav-tab">Categories</a>
+    <a href="sizes.html" class="admin-nav-tab">Sizes &amp; Stock</a>
+    <a href="add-product.html" class="admin-nav-tab">+ Add Product</a>
+    <a href="bulk-upload.html" class="admin-nav-tab bulk-highlight">⚡ Bulk Upload</a>
+    <a href="add-banner.html" class="admin-nav-tab">Hero Banners</a>
+    <a href="users.html" class="admin-nav-tab">Users</a>
+  </nav>
+
+  <main class="admin-container">
+    <!-- PAGE TITLE -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
+      <div>
+        <h2 style="font-family: var(--font-heading); font-size: 1.5rem; font-weight: 900; letter-spacing: -0.5px;">FESTIVE OFFER BANNER MANAGEMENT</h2>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 2px;">Create and manage the multi-item festive combo box on the homepage (Diwali, Eid, Christmas, Black Friday, Royal) with 1-click calling.</p>
+      </div>
+      <button class="btn-admin" onclick="loadOfferBannerData()" style="font-size: 0.8rem; padding: 8px 14px; background: #222;">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+        <span>REFRESH</span>
+      </button>
+    </div>
+
+    <!-- MUTUAL EXCLUSIVITY ALERT (IF COUPON IS ACTIVE ON HOMEPAGE) -->
+    <div id="couponConflictBanner" style="display: none; background: #fffbeb; border: 1px solid #fcd34d; border-radius: 6px; padding: 14px 18px; margin-bottom: 20px;">
+      <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
+        <div>
+          <div style="font-weight: 800; font-size: 0.95rem; color: #92400e; display: flex; align-items: center; gap: 6px;">
+            <span>⚠️ HOMEPAGE BANNER OCCUPIED BY COUPON</span>
+          </div>
+          <p style="font-size: 0.82rem; color: #78350f; margin-top: 4px;" id="couponConflictText">
+            A promotional coupon is currently set to display its event banner on the homepage. Only one promotional banner can be displayed at a time.
+          </p>
+        </div>
+        <button type="button" class="btn-admin btn-admin-success" onclick="resolveAndSwitchToOfferBanner()" style="font-size: 0.75rem; padding: 6px 12px; white-space: nowrap;">
+          SWITCH TO OFFER BANNER NOW →
+        </button>
+      </div>
+    </div>
+
+    <!-- LIVE REAL-TIME PREVIEW CARD -->
+    <div style="margin-bottom: 24px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+        <span style="font-size: 0.8rem; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase; color: var(--text-muted);">✨ LIVE STOREFRONT PREVIEW</span>
+        <span id="previewStatusBadge" style="font-size: 0.75rem; font-weight: 800; padding: 3px 8px; border-radius: 4px; background: #fee2e2; color: #991b1b;">INACTIVE ON STOREFRONT</span>
+      </div>
+
+      <div id="liveBannerPreview" class="banner-preview-card theme-preview-diwali">
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap;">
+          <div style="display: flex; flex-direction: column; gap: 4px; min-width: 220px;">
+            <span id="prevBadge" style="display:inline-block; font-size: 10px; font-weight: 900; letter-spacing: 1px; text-transform: uppercase; padding: 3px 8px; border-radius: 999px; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); width: fit-content;">✨ DIWALI MEGA DEALS</span>
+            <span id="prevTitle" style="font-family: var(--font-heading); font-size: 1.15rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;">Diwali Special Offer</span>
+          </div>
+
+          <div id="prevItemsList" style="display: flex; gap: 8px; flex-wrap: wrap; flex: 1; align-items: center;">
+            <!-- Dynamically populated offer badges -->
+          </div>
+
+          <div id="prevCallBtnWrap" style="display: flex; align-items: center;">
+            <a href="javascript:void(0)" id="prevCallLink" style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px; border-radius: 4px; background: #fff; color: #000; font-weight: 800; font-size: 12px; text-decoration: none; letter-spacing: 0.5px; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+              <span>CALL NOW: <span id="prevPhone">8484943585</span></span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAIN CONFIGURATION CARD -->
+    <div style="background: #ffffff; padding: 28px; border-radius: 8px; border: 1px solid var(--border-light); box-shadow: 0 2px 10px rgba(0,0,0,0.04); margin-bottom: 40px;">
+      <form id="offerBannerForm" onsubmit="event.preventDefault(); handleSaveOfferBanner();">
+        <input type="hidden" id="bannerId" />
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+          <div class="form-group" style="margin-bottom: 0;">
+            <label style="font-weight: 700; font-size: 0.85rem;">Campaign / Event Title *</label>
+            <input type="text" id="bannerTitle" class="form-control" required placeholder="e.g. Diwali Special Offer" oninput="updateLivePreview()" />
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label style="font-weight: 700; font-size: 0.85rem;">Badge Tag *</label>
+            <input type="text" id="bannerBadge" class="form-control" required placeholder="e.g. ✨ DIWALI MEGA DEALS" oninput="updateLivePreview()" />
+          </div>
+        </div>
+
+        <!-- COLOR THEME SELECTOR -->
+        <div class="form-group" style="margin-bottom: 18px;">
+          <label style="font-weight: 700; font-size: 0.85rem; display: block; margin-bottom: 4px;">Festive Color Theme *</label>
+          <div class="theme-radio-grid">
+            <div class="theme-radio-card active" onclick="selectTheme('diwali', this)">
+              <div class="theme-swatch" style="background: linear-gradient(135deg, #ea580c, #b45309);"></div>
+              <span style="font-size: 0.8rem; font-weight: 800;">🪔 Diwali (Orange)</span>
+            </div>
+            <div class="theme-radio-card" onclick="selectTheme('eid', this)">
+              <div class="theme-swatch" style="background: linear-gradient(135deg, #064e3b, #10b981);"></div>
+              <span style="font-size: 0.8rem; font-weight: 800;">🌙 Eid (Emerald)</span>
+            </div>
+            <div class="theme-radio-card" onclick="selectTheme('christmas', this)">
+              <div class="theme-swatch" style="background: linear-gradient(135deg, #991b1b, #dc2626);"></div>
+              <span style="font-size: 0.8rem; font-weight: 800;">🎄 Christmas (Red)</span>
+            </div>
+            <div class="theme-radio-card" onclick="selectTheme('black_friday', this)">
+              <div class="theme-swatch" style="background: linear-gradient(135deg, #0f172a, #a855f7);"></div>
+              <span style="font-size: 0.8rem; font-weight: 800;">⚡ Cyber (Midnight)</span>
+            </div>
+            <div class="theme-radio-card" onclick="selectTheme('royal', this)">
+              <div class="theme-swatch" style="background: linear-gradient(135deg, #312e81, #7c3aed);"></div>
+              <span style="font-size: 0.8rem; font-weight: 800;">👑 Royal (Indigo)</span>
+            </div>
+          </div>
+          <input type="hidden" id="selectedTheme" value="diwali" />
+        </div>
+
+        <!-- CONTACT DETAILS -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 18px; align-items: center;">
+          <div class="form-group" style="margin-bottom: 0;">
+            <label style="font-weight: 700; font-size: 0.85rem;">Contact Mobile Number (for 1-click order calling)</label>
+            <input type="text" id="contactNumber" class="form-control" placeholder="8484943585" oninput="updateLivePreview()" />
+          </div>
+          <div class="form-group-toggle" style="margin-top: 22px;">
+            <label for="showContactToggle">
+              <strong>Show Contact Number &amp; Call Button</strong>
+              <div style="font-size: 0.74rem; color: #64748b;">Directs customer to phone dialer on click</div>
+            </label>
+            <input type="checkbox" id="showContactToggle" checked style="width: 18px; height: 18px; cursor: pointer;" onchange="updateLivePreview()" />
+          </div>
+        </div>
+
+        <!-- OFFER ITEMS LIST (REPEATER) -->
+        <div style="background: #fafafa; border: 1px solid #e2e8f0; border-radius: 6px; padding: 18px; margin-bottom: 20px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+            <div>
+              <span style="font-size: 0.9rem; font-weight: 800; color: #1e293b;">COMBO DEALS &amp; PROMO ITEMS</span>
+              <p style="font-size: 0.75rem; color: #64748b; margin-top: 2px;">Add each bundle or combo deal (e.g. "Oversized T-Shirt", Price: "999", Package: "3 Pic").</p>
+            </div>
+            <button type="button" class="btn-admin" onclick="addOfferItemRow()" style="font-size: 0.75rem; padding: 6px 12px; background: #111;">
+              + ADD ITEM
+            </button>
+          </div>
+
+          <table class="offer-items-table">
+            <thead>
+              <tr>
+                <th style="width: 45%;">PRODUCT / ITEM NAME</th>
+                <th style="width: 25%;">PRICE (₹)</th>
+                <th style="width: 20%;">QTY / PACKAGE</th>
+                <th style="width: 10%; text-align: center;">ACTION</th>
+              </tr>
+            </thead>
+            <tbody id="offerItemsBody">
+              <!-- Dynamically populated rows -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- VISIBILITY TOGGLE -->
+        <div class="form-group-toggle" style="margin-bottom: 24px; background: #f0fdf4; border-color: #bbf7d0;">
+          <label for="isActiveToggle">
+            <strong style="color: #166534;">Activate Offer Banner on Homepage</strong>
+            <div style="font-size: 0.75rem; color: #15803d;">When active, replaces the standard coupon banner on the homepage with this creative festive combo banner.</div>
+          </label>
+          <input type="checkbox" id="isActiveToggle" style="width: 20px; height: 20px; cursor: pointer;" onchange="updateLivePreview()" />
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 12px;">
+          <button type="submit" id="saveBannerBtn" class="btn-admin btn-admin-success" style="padding: 12px 28px; font-weight: 800; font-size: 0.95rem;">
+            SAVE &amp; PUBLISH OFFER BANNER
+          </button>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <script>
+    let currentBannerData = null;
+    let stagedItems = [];
+
+    const defaultInitialItems = [
+      { name: "Oversized T-Shirt", price: "999", qty: "3 Pic" },
+      { name: "Denim Shirt", price: "1200", qty: "2 Pic" },
+      { name: "Linen Trouser Pant", price: "1499", qty: "2 Pic" },
+      { name: "Linen Shirt", price: "1200", qty: "2 Pic" }
+    ];
+
+    function selectTheme(themeName, el) {
+      document.querySelectorAll('.theme-radio-card').forEach(c => c.classList.remove('active'));
+      if (el) el.classList.add('active');
+      document.getElementById('selectedTheme').value = themeName;
+      updateLivePreview();
+    }
+
+    function addOfferItemRow(name = '', price = '', qty = '') {
+      stagedItems.push({ name, price, qty });
+      renderItemsTable();
+      updateLivePreview();
+    }
+
+    function removeOfferItemRow(idx) {
+      stagedItems.splice(idx, 1);
+      renderItemsTable();
+      updateLivePreview();
+    }
+
+    function renderItemsTable() {
+      const tbody = document.getElementById('offerItemsBody');
+      if (stagedItems.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #888; padding: 24px;">No items added yet. Click "+ ADD ITEM" above.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = stagedItems.map((item, idx) => `
+        <tr>
+          <td>
+            <input type="text" class="form-control" style="padding: 6px 10px; font-size: 13px;" value="${item.name || ''}" placeholder="e.g. Oversized T-Shirt" oninput="stagedItems[${idx}].name = this.value; updateLivePreview();" required />
+          </td>
+          <td>
+            <input type="text" class="form-control" style="padding: 6px 10px; font-size: 13px;" value="${item.price || ''}" placeholder="e.g. 999" oninput="stagedItems[${idx}].price = this.value; updateLivePreview();" required />
+          </td>
+          <td>
+            <input type="text" class="form-control" style="padding: 6px 10px; font-size: 13px;" value="${item.qty || ''}" placeholder="e.g. 3 Pic" oninput="stagedItems[${idx}].qty = this.value; updateLivePreview();" required />
+          </td>
+          <td style="text-align: center;">
+            <button type="button" class="btn-admin" onclick="removeOfferItemRow(${idx})" style="padding: 4px 8px; font-size: 11px; background: #dc2626;">✕</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function updateLivePreview() {
+      const title = document.getElementById('bannerTitle').value || 'Diwali Special Offer';
+      const badge = document.getElementById('bannerBadge').value || '✨ FESTIVE MEGA DEALS';
+      const theme = document.getElementById('selectedTheme').value || 'diwali';
+      const phone = document.getElementById('contactNumber').value || '8484943585';
+      const showContact = document.getElementById('showContactToggle').checked;
+      const isActive = document.getElementById('isActiveToggle').checked;
+
+      // Update Preview Card Classes
+      const previewCard = document.getElementById('liveBannerPreview');
+      previewCard.className = `banner-preview-card theme-preview-${theme}`;
+
+      document.getElementById('prevTitle').textContent = title;
+      document.getElementById('prevBadge').textContent = badge;
+      document.getElementById('prevPhone').textContent = phone;
+      document.getElementById('prevCallBtnWrap').style.display = (showContact && phone) ? 'flex' : 'none';
+
+      const prevBadgeEl = document.getElementById('previewStatusBadge');
+      if (isActive) {
+        prevBadgeEl.textContent = '✓ ACTIVE (WILL SHOW ON HOMEPAGE)';
+        prevBadgeEl.style.background = '#dcfce7';
+        prevBadgeEl.style.color = '#15803d';
+      } else {
+        prevBadgeEl.textContent = '✕ INACTIVE (NOT DISPLAYED)';
+        prevBadgeEl.style.background = '#fee2e2';
+        prevBadgeEl.style.color = '#991b1b';
+      }
+
+      // Render Item Chips in Preview
+      const itemsContainer = document.getElementById('prevItemsList');
+      if (stagedItems.length === 0) {
+        itemsContainer.innerHTML = '<span style="font-size: 11px; opacity: 0.7;">No items added</span>';
+      } else {
+        itemsContainer.innerHTML = stagedItems.map(it => `
+          <div style="background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.25); border-radius: 4px; padding: 6px 12px; display: inline-flex; align-items: center; gap: 8px;">
+            <span style="font-size: 12px; font-weight: 700;">${it.name || 'Item'}</span>
+            <span style="background: #ffffff; color: #111; font-weight: 800; font-size: 11px; padding: 2px 6px; border-radius: 3px;">₹${it.price || 0} / ${it.qty || '1 Pic'}</span>
+          </div>
+        `).join('');
+      }
+    }
+
+    async function checkCouponConflicts() {
+      if (typeof window.getActiveHomeCoupon === 'function') {
+        const activeCoupon = await window.getActiveHomeCoupon();
+        const conflictBox = document.getElementById('couponConflictBanner');
+        const conflictText = document.getElementById('couponConflictText');
+        if (activeCoupon) {
+          conflictBox.style.display = 'block';
+          conflictText.textContent = `A Coupon Banner (${activeCoupon.code} - ${activeCoupon.title}) is currently set to display on the homepage. Only one promotional banner can show on the homepage.`;
+        } else {
+          conflictBox.style.display = 'none';
+        }
+      }
+    }
+
+    async function resolveAndSwitchToOfferBanner() {
+      if (confirm('This will turn off "Show Event Banner on Main Homepage" for the active coupon and enable the Offer Banner. Proceed?')) {
+        await window.disableHomeCoupons();
+        document.getElementById('isActiveToggle').checked = true;
+        document.getElementById('couponConflictBanner').style.display = 'none';
+        updateLivePreview();
+        await handleSaveOfferBanner();
+      }
+    }
+
+    async function loadOfferBannerData() {
+      await checkCouponConflicts();
+
+      if (typeof window.fetchAdminOfferBanner === 'function') {
+        const { data, error } = await window.fetchAdminOfferBanner();
+        if (data) {
+          currentBannerData = data;
+          document.getElementById('bannerId').value = data.id || '';
+          document.getElementById('bannerTitle').value = data.title || 'Diwali Special Offer';
+          document.getElementById('bannerBadge').value = data.badge_tag || '✨ DIWALI MEGA DEALS';
+          document.getElementById('contactNumber').value = data.contact_number || '8484943585';
+          document.getElementById('showContactToggle').checked = data.show_contact !== false;
+          document.getElementById('isActiveToggle').checked = !!data.is_active;
+
+          const theme = data.theme || 'diwali';
+          document.getElementById('selectedTheme').value = theme;
+          document.querySelectorAll('.theme-radio-card').forEach(c => {
+            if (c.onclick.toString().includes(theme)) c.classList.add('active');
+            else c.classList.remove('active');
+          });
+
+          if (Array.isArray(data.items) && data.items.length > 0) {
+            stagedItems = data.items;
+          } else {
+            stagedItems = [...defaultInitialItems];
+          }
+        } else {
+          // Defaults for new setup
+          document.getElementById('bannerTitle').value = 'Diwali Special Offer';
+          document.getElementById('bannerBadge').value = '✨ DIWALI MEGA DEALS';
+          document.getElementById('contactNumber').value = '8484943585';
+          document.getElementById('showContactToggle').checked = true;
+          document.getElementById('isActiveToggle').checked = false;
+          stagedItems = [...defaultInitialItems];
+        }
+
+        renderItemsTable();
+        updateLivePreview();
+      }
+    }
+
+    async function handleSaveOfferBanner() {
+      const id = document.getElementById('bannerId').value;
+      const title = document.getElementById('bannerTitle').value.trim();
+      const badge = document.getElementById('bannerBadge').value.trim();
+      const theme = document.getElementById('selectedTheme').value || 'diwali';
+      const contact = document.getElementById('contactNumber').value.trim();
+      const showContact = document.getElementById('showContactToggle').checked;
+      const isActive = document.getElementById('isActiveToggle').checked;
+
+      if (!title || stagedItems.length === 0) {
+        window.adminToast('Please provide a title and at least one combo offer item', true);
+        return;
+      }
+
+      // Check mutual exclusivity with coupon banner if attempting to activate
+      if (isActive) {
+        const activeCoupon = await window.getActiveHomeCoupon();
+        if (activeCoupon) {
+          const switchNow = confirm(`⚠️ Coupon "${activeCoupon.code}" currently has its Homepage Banner enabled!\n\nOnly one promotional banner can be displayed on the homepage at a time.\n\nClick OK to automatically disable the coupon banner and activate this Offer Banner, or Cancel to go disable it manually first.`);
+          if (switchNow) {
+            await window.disableHomeCoupons();
+            document.getElementById('couponConflictBanner').style.display = 'none';
+          } else {
+            document.getElementById('isActiveToggle').checked = false;
+            updateLivePreview();
+            window.adminToast('Offer Banner not activated. Please remove the active coupon banner first.', true);
+            return;
+          }
+        }
+      }
+
+      const payload = {
+        title,
+        badge_tag: badge,
+        theme,
+        items: stagedItems,
+        contact_number: contact,
+        show_contact: showContact,
+        is_active: isActive
+      };
+      if (id) payload.id = id;
+
+      const btn = document.getElementById('saveBannerBtn');
+      btn.disabled = true;
+      btn.textContent = 'SAVING OFFER BANNER...';
+
+      const { data, error } = await window.saveAdminOfferBanner(payload);
+      btn.disabled = false;
+      btn.textContent = 'SAVE & PUBLISH OFFER BANNER';
+
+      if (error) {
+        window.adminToast('Failed to save offer banner: ' + error.message, true);
+        return;
+      }
+
+      window.adminToast('✓ Festive Offer Banner saved successfully!');
+      if (data && data.id) document.getElementById('bannerId').value = data.id;
+      updateLivePreview();
+      checkCouponConflicts();
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      loadOfferBannerData();
+      document.addEventListener('adminSupabaseReady', loadOfferBannerData);
+    });
+  </script>
+</body>
+</html>

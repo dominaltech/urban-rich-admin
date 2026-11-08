@@ -287,25 +287,34 @@
       const rawType = (couponData.discount_type || '').toLowerCase();
       const standardType = rawType.includes('fix') || rawType.includes('flat') ? 'FIXED' : 'PERCENTAGE';
       
-      const normalized = {
-        ...couponData,
-        code: (couponData.code || '').trim().toUpperCase(),
-        discount_type: standardType,
-        updated_at: new Date().toISOString()
-      };
+      // Whitelist only live database columns to prevent PostgREST schema cache errors
+      const allowedFields = [
+        'code', 'title', 'discount_type', 'discount_value', 'min_order_value',
+        'max_discount', 'banner_tag', 'banner_message', 'show_home_banner',
+        'show_product_banner', 'is_active', 'updated_at'
+      ];
+      
+      const cleanPayload = {};
+      allowedFields.forEach(f => {
+        if (couponData[f] !== undefined) cleanPayload[f] = couponData[f];
+      });
+      cleanPayload.code = (couponData.code || '').trim().toUpperCase();
+      cleanPayload.discount_type = standardType;
+      cleanPayload.updated_at = new Date().toISOString();
 
       let res;
-      if (normalized.id) {
+      if (couponData.id) {
+        cleanPayload.id = couponData.id;
         res = await client
           .from('coupons')
-          .update(normalized)
-          .eq('id', normalized.id)
+          .update(cleanPayload)
+          .eq('id', couponData.id)
           .select()
           .single();
       } else {
         res = await client
           .from('coupons')
-          .insert([normalized])
+          .insert([cleanPayload])
           .select()
           .single();
       }

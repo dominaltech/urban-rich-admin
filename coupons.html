@@ -218,14 +218,6 @@
           </div>
 
           <div class="form-group-toggle">
-            <label for="couponAutoApply">
-              <strong>Auto-Apply at Checkout &amp; Buy Now</strong>
-              <div style="font-size: 0.74rem; color: #64748b; font-weight: 500;">Automatically applies this discount for buyers without requiring manual code entry</div>
-            </label>
-            <input type="checkbox" id="couponAutoApply" checked style="width: 18px; height: 18px; cursor: pointer;" />
-          </div>
-
-          <div class="form-group-toggle">
             <label for="couponIsActive">
               <strong>Coupon Active &amp; Usable at Checkout</strong>
               <div style="font-size: 0.74rem; color: #64748b; font-weight: 500;">Enables customer discount calculation in Cart and Checkout</div>
@@ -494,7 +486,6 @@
       
       document.getElementById('couponShowHome').checked = coupon ? (coupon.show_home_banner !== false) : true;
       document.getElementById('couponShowProduct').checked = coupon ? (coupon.show_product_banner !== false) : true;
-      document.getElementById('couponAutoApply').checked = coupon ? (coupon.auto_apply !== false) : true;
       document.getElementById('couponIsActive').checked = coupon ? (coupon.is_active !== false) : true;
 
       handleTypeChange();
@@ -523,7 +514,6 @@
       const bannerMsg = document.getElementById('couponBannerMsg').value.trim() || 'SPECIAL DISCOUNT ON ALL ORDERS';
       const showHome = document.getElementById('couponShowHome').checked;
       const showProduct = document.getElementById('couponShowProduct').checked;
-      const autoApply = document.getElementById('couponAutoApply').checked;
       const isActive = document.getElementById('couponIsActive').checked;
 
       if (!code || !title || isNaN(discountValue)) {
@@ -542,7 +532,6 @@
         banner_message: bannerMsg,
         show_home_banner: showHome,
         show_product_banner: showProduct,
-        auto_apply: autoApply,
         is_active: isActive
       };
       if (id) payload.id = id;

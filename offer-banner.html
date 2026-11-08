@@ -158,20 +158,20 @@
       </button>
     </div>
 
-    <!-- MUTUAL EXCLUSIVITY ALERT (IF COUPON IS ACTIVE ON HOMEPAGE) -->
-    <div id="couponConflictBanner" style="display: none; background: #fffbeb; border: 1px solid #fcd34d; border-radius: 6px; padding: 14px 18px; margin-bottom: 20px;">
+    <!-- SMART DUAL-BANNER ROUTING STATUS -->
+    <div id="dualBannerStatusBox" style="background: #f0fdf4; border: 1px solid #86efac; border-radius: 6px; padding: 14px 18px; margin-bottom: 20px;">
       <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
         <div>
-          <div style="font-weight: 800; font-size: 0.95rem; color: #92400e; display: flex; align-items: center; gap: 6px;">
-            <span>⚠️ HOMEPAGE BANNER OCCUPIED BY COUPON</span>
+          <div style="font-weight: 800; font-size: 0.95rem; color: #166534; display: flex; align-items: center; gap: 6px;">
+            <span>🎯 SMART DUAL-BANNER STRATEGY ACTIVE</span>
           </div>
-          <p style="font-size: 0.82rem; color: #78350f; margin-top: 4px;" id="couponConflictText">
-            A promotional coupon is currently set to display its event banner on the homepage. Only one promotional banner can be displayed at a time.
+          <p style="font-size: 0.82rem; color: #15803d; margin-top: 4px;" id="dualBannerStatusText">
+            Both Offer Banner and Coupon Banner can run at the same time. When both are enabled: <strong>Main Page</strong> showcases this Festive Offer Banner, and <strong>Shopping Page (Shop All)</strong> showcases the Coupon Banner on top. If only one is enabled, it automatically displays on both Main and Shopping pages.
           </p>
         </div>
-        <button type="button" class="btn-admin btn-admin-success" onclick="resolveAndSwitchToOfferBanner()" style="font-size: 0.75rem; padding: 6px 12px; white-space: nowrap;">
-          SWITCH TO OFFER BANNER NOW →
-        </button>
+        <a href="coupons.html" class="btn-admin" style="font-size: 0.75rem; padding: 6px 12px; background: #166534; color: #fff; text-decoration: none;">
+          VIEW COUPONS →
+        </a>
       </div>
     </div>
 
@@ -404,32 +404,22 @@
       }
     }
 
-    async function checkCouponConflicts() {
+    async function updateDualBannerStatus() {
       if (typeof window.getActiveHomeCoupon === 'function') {
         const activeCoupon = await window.getActiveHomeCoupon();
-        const conflictBox = document.getElementById('couponConflictBanner');
-        const conflictText = document.getElementById('couponConflictText');
-        if (activeCoupon) {
-          conflictBox.style.display = 'block';
-          conflictText.textContent = `A Coupon Banner (${activeCoupon.code} - ${activeCoupon.title}) is currently set to display on the homepage. Only one promotional banner can show on the homepage.`;
-        } else {
-          conflictBox.style.display = 'none';
+        const statusText = document.getElementById('dualBannerStatusText');
+        if (statusText) {
+          if (activeCoupon) {
+            statusText.innerHTML = `Active Coupon detected: <strong>${activeCoupon.code}</strong> (${activeCoupon.title || 'Special Discount'}).<br>Both banners can run together! When both are active: <strong>Main Page</strong> shows this Festive Offer Banner, and <strong>Shopping Page (Shop All)</strong> shows the Coupon Banner on top. If only one is enabled, it shows on both Main &amp; Shopping pages.`;
+          } else {
+            statusText.innerHTML = `No active coupon banner currently on storefront.<br>When this Festive Offer Banner is enabled, it will display across <strong>both Main and Shopping pages</strong>. If you later activate a coupon banner, the Main Page will keep showing this Offer Banner and the Shopping Page will show the Coupon Banner on top!`;
+          }
         }
       }
     }
 
-    async function resolveAndSwitchToOfferBanner() {
-      if (confirm('This will turn off "Show Event Banner on Main Homepage" for the active coupon and enable the Offer Banner. Proceed?')) {
-        await window.disableHomeCoupons();
-        document.getElementById('isActiveToggle').checked = true;
-        document.getElementById('couponConflictBanner').style.display = 'none';
-        updateLivePreview();
-        await handleSaveOfferBanner();
-      }
-    }
-
     async function loadOfferBannerData() {
-      await checkCouponConflicts();
+      await updateDualBannerStatus();
 
       if (typeof window.fetchAdminOfferBanner === 'function') {
         const { data, error } = await window.fetchAdminOfferBanner();
@@ -483,23 +473,6 @@
         return;
       }
 
-      // Check mutual exclusivity with coupon banner if attempting to activate
-      if (isActive) {
-        const activeCoupon = await window.getActiveHomeCoupon();
-        if (activeCoupon) {
-          const switchNow = confirm(`⚠️ Coupon "${activeCoupon.code}" currently has its Homepage Banner enabled!\n\nOnly one promotional banner can be displayed on the homepage at a time.\n\nClick OK to automatically disable the coupon banner and activate this Offer Banner, or Cancel to go disable it manually first.`);
-          if (switchNow) {
-            await window.disableHomeCoupons();
-            document.getElementById('couponConflictBanner').style.display = 'none';
-          } else {
-            document.getElementById('isActiveToggle').checked = false;
-            updateLivePreview();
-            window.adminToast('Offer Banner not activated. Please remove the active coupon banner first.', true);
-            return;
-          }
-        }
-      }
-
       const payload = {
         title,
         badge_tag: badge,
@@ -527,7 +500,7 @@
       window.adminToast('✓ Festive Offer Banner saved successfully!');
       if (data && data.id) document.getElementById('bannerId').value = data.id;
       updateLivePreview();
-      checkCouponConflicts();
+      updateDualBannerStatus();
     }
 
     document.addEventListener('DOMContentLoaded', function() {
@@ -537,3 +510,4 @@
   </script>
 </body>
 </html>
+

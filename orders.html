@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -17,6 +18,7 @@
       gap: 6px;
       width: 100%;
     }
+
     .btn-action-view {
       padding: 6px 10px;
       font-size: 0.75rem;
@@ -32,9 +34,11 @@
       gap: 4px;
       transition: all 0.15s ease;
     }
+
     .btn-action-view:hover {
       background: #222;
     }
+
     .btn-action-delete {
       padding: 5px 10px;
       font-size: 0.72rem;
@@ -50,17 +54,20 @@
       gap: 4px;
       transition: all 0.15s ease;
     }
+
     .btn-action-delete:hover {
       background: #dc2626;
       color: #ffffff;
       border-color: #b91c1c;
     }
+
     .modal-tab-nav {
       display: flex;
       border-bottom: 2px solid #e2e8f0;
       margin-bottom: 16px;
       gap: 8px;
     }
+
     .modal-tab-btn {
       padding: 8px 16px;
       font-size: 0.82rem;
@@ -73,30 +80,37 @@
       color: #64748b;
       text-transform: uppercase;
     }
+
     .modal-tab-btn.active {
       color: #0f172a;
       border-bottom-color: #0f172a;
     }
+
     .edit-form-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 12px;
     }
+
     .edit-form-group {
       display: flex;
       flex-direction: column;
       gap: 4px;
     }
+
     .edit-form-group.full-width {
       grid-column: 1 / -1;
     }
+
     .edit-form-group label {
       font-size: 0.74rem;
       font-weight: 800;
       text-transform: uppercase;
       color: #475569;
     }
-    .edit-form-group input, .edit-form-group select {
+
+    .edit-form-group input,
+    .edit-form-group select {
       padding: 8px 10px;
       border: 1px solid #cbd5e1;
       border-radius: 4px;
@@ -104,13 +118,17 @@
       font-weight: 600;
       color: #1e293b;
     }
+
     @media print {
       body * {
         visibility: hidden;
       }
-      #printInvoiceArea, #printInvoiceArea * {
+
+      #printInvoiceArea,
+      #printInvoiceArea * {
         visibility: visible;
       }
+
       #printInvoiceArea {
         position: absolute;
         left: 0;
@@ -121,22 +139,35 @@
         background: #fff !important;
         color: #000 !important;
       }
+
       .no-print {
         display: none !important;
       }
     }
   </style>
 </head>
+
 <body>
   <!-- HEADER -->
   <header class="admin-header">
     <div class="header-left">
-      <button class="menu-trigger-btn" onclick="openDrawer()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
-      <div class="brand-logo"><img src="images/logo.jpg" alt="Urban Rich Logo"><span class="brand-name">URBAN RICH ADMIN</span></div>
+      <button class="menu-trigger-btn" onclick="openDrawer()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2">
+          <line x1="3" y1="12" x2="21" y2="12" />
+          <line x1="3" y1="6" x2="21" y2="6" />
+          <line x1="3" y1="18" x2="21" y2="18" />
+        </svg></button>
+      <div class="brand-logo"><img src="images/logo.jpg" alt="Urban Rich Logo"><span class="brand-name">URBAN RICH
+          ADMIN</span></div>
     </div>
     <div style="display: flex; align-items: center; gap: 12px;">
-      <button class="btn-admin" onclick="loadOrders()" style="padding: 6px 12px; font-size: 0.8rem; background: #222; border: 1px solid #444;">
-        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+      <button class="btn-admin" onclick="loadOrders()"
+        style="padding: 6px 12px; font-size: 0.8rem; background: #222; border: 1px solid #444;">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M23 4v6h-6" />
+          <path d="M1 20v-6h6" />
+          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+        </svg>
         <span>Refresh</span>
       </button>
     </div>
@@ -159,13 +190,20 @@
 
   <main class="admin-container">
     <!-- PAGE TITLE -->
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
+    <div
+      style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
       <div>
-        <h2 style="font-family: var(--font-heading); font-size: 1.5rem; font-weight: 900; letter-spacing: -0.5px;">CUSTOMER ORDERS MANAGEMENT</h2>
-        <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 2px;">Inspect orders, edit customer info, update dispatch tracking, manage CRUD operations and delete cancelled orders.</p>
+        <h2 style="font-family: var(--font-heading); font-size: 1.5rem; font-weight: 900; letter-spacing: -0.5px;">
+          CUSTOMER ORDERS MANAGEMENT</h2>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 2px;">Inspect orders, edit customer info,
+          update dispatch tracking, manage CRUD operations and delete cancelled orders.</p>
       </div>
       <button class="btn-admin btn-admin-success" onclick="loadOrders()" style="font-size: 0.8rem; padding: 8px 16px;">
-        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M23 4v6h-6" />
+          <path d="M1 20v-6h6" />
+          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+        </svg>
         <span>RELOAD LIVE ORDERS</span>
       </button>
     </div>
@@ -197,17 +235,27 @@
     <!-- SEARCH & FILTER TOOLBAR -->
     <div class="orders-filter-container">
       <div class="order-search-box">
-        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <input type="text" id="orderSearchInput" placeholder="Search by Order #, Customer, Phone, City, Product..." oninput="filterAndRenderOrders()" />
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8" />
+          <line x1="21" y1="21" x2="16.65" y2="16.65" />
+        </svg>
+        <input type="text" id="orderSearchInput" placeholder="Search by Order #, Customer, Phone, City, Product..."
+          oninput="filterAndRenderOrders()" />
       </div>
 
       <div class="order-filter-chips" id="statusFilterChips">
-        <button class="filter-chip-btn active" data-status="ALL" onclick="setStatusFilter('ALL', this)">All Orders (<span id="countAll">0</span>)</button>
-        <button class="filter-chip-btn" data-status="PLACED" onclick="setStatusFilter('PLACED', this)">Placed (<span id="countPlaced">0</span>)</button>
-        <button class="filter-chip-btn" data-status="PROCESSING" onclick="setStatusFilter('PROCESSING', this)">Processing (<span id="countProcessing">0</span>)</button>
-        <button class="filter-chip-btn" data-status="SHIPPED" onclick="setStatusFilter('SHIPPED', this)">Shipped (<span id="countShipped">0</span>)</button>
-        <button class="filter-chip-btn" data-status="DELIVERED" onclick="setStatusFilter('DELIVERED', this)">Delivered (<span id="countDelivered">0</span>)</button>
-        <button class="filter-chip-btn" data-status="CANCELLED" onclick="setStatusFilter('CANCELLED', this)">Cancelled / Unpaid (<span id="countCancelled">0</span>)</button>
+        <button class="filter-chip-btn active" data-status="ALL" onclick="setStatusFilter('ALL', this)">All Orders
+          (<span id="countAll">0</span>)</button>
+        <button class="filter-chip-btn" data-status="PLACED" onclick="setStatusFilter('PLACED', this)">Placed (<span
+            id="countPlaced">0</span>)</button>
+        <button class="filter-chip-btn" data-status="PROCESSING"
+          onclick="setStatusFilter('PROCESSING', this)">Processing (<span id="countProcessing">0</span>)</button>
+        <button class="filter-chip-btn" data-status="SHIPPED" onclick="setStatusFilter('SHIPPED', this)">Shipped (<span
+            id="countShipped">0</span>)</button>
+        <button class="filter-chip-btn" data-status="DELIVERED" onclick="setStatusFilter('DELIVERED', this)">Delivered
+          (<span id="countDelivered">0</span>)</button>
+        <button class="filter-chip-btn" data-status="CANCELLED" onclick="setStatusFilter('CANCELLED', this)">Cancelled /
+          Unpaid (<span id="countCancelled">0</span>)</button>
       </div>
     </div>
 
@@ -226,7 +274,9 @@
           </tr>
         </thead>
         <tbody id="ordersBody">
-          <tr><td colspan="7" style="text-align: center; padding: 40px; color: #888;">Loading live customer orders...</td></tr>
+          <tr>
+            <td colspan="7" style="text-align: center; padding: 40px; color: #888;">Loading live customer orders...</td>
+          </tr>
         </tbody>
       </table>
     </div>
@@ -252,27 +302,52 @@
   <!-- FIXED MOBILE BOTTOM TASKBAR -->
   <nav class="admin-mobile-taskbar">
     <a href="index.html" class="admin-taskbar-tab">
-      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+        <polyline points="9 22 9 12 15 12 15 22" />
+      </svg>
       <span>Dashboard</span>
     </a>
     <a href="orders.html" class="admin-taskbar-tab active">
-      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+        <polyline points="14 2 14 8 20 8" />
+      </svg>
       <span>Orders</span>
     </a>
     <a href="all-products.html" class="admin-taskbar-tab">
-      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="3" y="3" width="7" height="7" />
+        <rect x="14" y="3" width="7" height="7" />
+        <rect x="14" y="14" width="7" height="7" />
+        <rect x="3" y="14" width="7" height="7" />
+      </svg>
       <span>Products</span>
     </a>
     <a href="categories.html" class="admin-taskbar-tab">
-      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="8" y1="6" x2="21" y2="6" />
+        <line x1="8" y1="12" x2="21" y2="12" />
+        <line x1="8" y1="18" x2="21" y2="18" />
+        <line x1="3" y1="6" x2="3.01" y2="6" />
+        <line x1="3" y1="12" x2="3.01" y2="12" />
+        <line x1="3" y1="18" x2="3.01" y2="18" />
+      </svg>
       <span>Categories</span>
     </a>
     <a href="sizes.html" class="admin-taskbar-tab">
-      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="2" y="7" width="20" height="14" rx="2" />
+        <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+      </svg>
       <span>Sizes</span>
     </a>
     <button class="admin-taskbar-tab" onclick="openDrawer()">
-      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="3" />
+        <path
+          d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+      </svg>
       <span>Menu</span>
     </button>
   </nav>
@@ -287,18 +362,28 @@
         </div>
         <button class="drawer-close-btn" onclick="closeDrawer()">✕</button>
       </div>
-      
+
       <div class="drawer-scroll-body">
-        
+
         <!-- SECTION 1: OVERVIEW & SALES -->
         <div class="drawer-menu-section">
           <div class="drawer-section-heading">OVERVIEW &amp; SALES</div>
           <a href="index.html" class="drawer-nav-item">
-            <svg viewBox="0 0 24 24" class="drawer-icon"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+            <svg viewBox="0 0 24 24" class="drawer-icon">
+              <rect x="3" y="3" width="7" height="7" />
+              <rect x="14" y="3" width="7" height="7" />
+              <rect x="14" y="14" width="7" height="7" />
+              <rect x="3" y="14" width="7" height="7" />
+            </svg>
             <span>Analytics Dashboard</span>
           </a>
           <a href="orders.html" class="drawer-nav-item active">
-            <svg viewBox="0 0 24 24" class="drawer-icon"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            <svg viewBox="0 0 24 24" class="drawer-icon">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+              <polyline points="14 2 14 8 20 8" />
+              <line x1="16" y1="13" x2="8" y2="13" />
+              <line x1="16" y1="17" x2="8" y2="17" />
+            </svg>
             <span>Customer Orders &amp; Slip</span>
           </a>
         </div>
@@ -307,15 +392,25 @@
         <div class="drawer-menu-section">
           <div class="drawer-section-heading">MARKETING &amp; PROMOTIONS</div>
           <a href="coupons.html" class="drawer-nav-item highlight-item">
-            <svg viewBox="0 0 24 24" class="drawer-icon"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+            <svg viewBox="0 0 24 24" class="drawer-icon">
+              <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
+              <line x1="7" y1="7" x2="7.01" y2="7" />
+            </svg>
             <span>🎟️ Discount Coupons</span>
           </a>
           <a href="coupons.html" class="drawer-nav-item">
-            <svg viewBox="0 0 24 24" class="drawer-icon"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <svg viewBox="0 0 24 24" class="drawer-icon">
+              <polygon
+                points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+            </svg>
             <span>✨ Homepage Event Banners</span>
           </a>
           <a href="add-banner.html" class="drawer-nav-item">
-            <svg viewBox="0 0 24 24" class="drawer-icon"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+            <svg viewBox="0 0 24 24" class="drawer-icon">
+              <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
+              <line x1="8" y1="21" x2="16" y2="21" />
+              <line x1="12" y1="17" x2="12" y2="21" />
+            </svg>
             <span>🖼️ Hero Slider Banners</span>
           </a>
         </div>
@@ -324,23 +419,43 @@
         <div class="drawer-menu-section">
           <div class="drawer-section-heading">CATALOG &amp; INVENTORY</div>
           <a href="all-products.html" class="drawer-nav-item">
-            <svg viewBox="0 0 24 24" class="drawer-icon"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+            <svg viewBox="0 0 24 24" class="drawer-icon">
+              <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
+              <line x1="3" y1="6" x2="21" y2="6" />
+              <path d="M16 10a4 4 0 0 1-8 0" />
+            </svg>
             <span>All Products Catalog</span>
           </a>
           <a href="add-product.html" class="drawer-nav-item">
-            <svg viewBox="0 0 24 24" class="drawer-icon"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+            <svg viewBox="0 0 24 24" class="drawer-icon">
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" y1="8" x2="12" y2="16" />
+              <line x1="8" y1="12" x2="16" y2="12" />
+            </svg>
             <span>+ Add New Product</span>
           </a>
           <a href="bulk-upload.html" class="drawer-nav-item">
-            <svg viewBox="0 0 24 24" class="drawer-icon"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            <svg viewBox="0 0 24 24" class="drawer-icon">
+              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+            </svg>
             <span>⚡ Bulk Product Upload</span>
           </a>
           <a href="categories.html" class="drawer-nav-item">
-            <svg viewBox="0 0 24 24" class="drawer-icon"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+            <svg viewBox="0 0 24 24" class="drawer-icon">
+              <line x1="8" y1="6" x2="21" y2="6" />
+              <line x1="8" y1="12" x2="21" y2="12" />
+              <line x1="8" y1="18" x2="21" y2="18" />
+              <line x1="3" y1="6" x2="3.01" y2="6" />
+              <line x1="3" y1="12" x2="3.01" y2="12" />
+              <line x1="3" y1="18" x2="3.01" y2="18" />
+            </svg>
             <span>Manage Categories</span>
           </a>
           <a href="sizes.html" class="drawer-nav-item">
-            <svg viewBox="0 0 24 24" class="drawer-icon"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+            <svg viewBox="0 0 24 24" class="drawer-icon">
+              <rect x="2" y="7" width="20" height="14" rx="2" />
+              <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+            </svg>
             <span>Sizes &amp; Stock Matrix</span>
           </a>
         </div>
@@ -349,11 +464,19 @@
         <div class="drawer-menu-section">
           <div class="drawer-section-heading">USERS &amp; SYSTEM</div>
           <a href="users.html" class="drawer-nav-item">
-            <svg viewBox="0 0 24 24" class="drawer-icon"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            <svg viewBox="0 0 24 24" class="drawer-icon">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+              <circle cx="9" cy="7" r="4" />
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+              <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+            </svg>
             <span>Registered Customers</span>
           </a>
           <button class="drawer-nav-item btn-push-drawer" onclick="requestAdminNotificationPermission()">
-            <svg viewBox="0 0 24 24" class="drawer-icon"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            <svg viewBox="0 0 24 24" class="drawer-icon">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+              <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+            </svg>
             <span>Enable Push Notifications</span>
           </button>
         </div>
@@ -391,7 +514,7 @@
     async function loadOrders() {
       const tbody = document.getElementById('ordersBody');
       tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px; color: #888;">Fetching customer orders from Supabase...</td></tr>';
-      
+
       try {
         const { data: orders, error } = await window.fetchAdminOrders();
         if (error) {
@@ -403,7 +526,7 @@
         allOrdersData = orders || [];
         updateMetricsAndFilterCounts();
         filterAndRenderOrders();
-      } catch(e) {
+      } catch (e) {
         console.error('Load orders exception:', e);
         tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #d90429; padding: 30px;">Failed to load orders.</td></tr>';
       }
@@ -416,7 +539,7 @@
       const shipped = allOrdersData.filter(o => o.order_status === 'SHIPPED').length;
       const delivered = allOrdersData.filter(o => o.order_status === 'DELIVERED').length;
       const cancelled = allOrdersData.filter(o => (
-        o.order_status === 'CANCELLED' || 
+        o.order_status === 'CANCELLED' ||
         o.payment_status === 'FAILED'
       )).length;
 
@@ -460,7 +583,7 @@
       if (currentStatusFilter !== 'ALL') {
         if (currentStatusFilter === 'CANCELLED') {
           filtered = filtered.filter(o => (
-            o.order_status === 'CANCELLED' || 
+            o.order_status === 'CANCELLED' ||
             o.payment_status === 'FAILED'
           ));
         } else {
@@ -475,7 +598,7 @@
           const name = (o.customer_name || '').toLowerCase();
           const phone = (o.customer_phone || '').toLowerCase();
           const email = (o.customer_email || '').toLowerCase();
-          
+
           let addr = '';
           if (typeof o.shipping_address === 'object' && o.shipping_address) {
             addr = `${o.shipping_address.address || ''} ${o.shipping_address.city || ''} ${o.shipping_address.state || ''} ${o.shipping_address.pincode || ''}`.toLowerCase();
@@ -488,12 +611,12 @@
             itemsText = o.order_items.map(i => `${i.product_name || ''} ${i.variant_size || ''}`).join(' ').toLowerCase();
           }
 
-          return num.includes(searchQuery) || 
-                 name.includes(searchQuery) || 
-                 phone.includes(searchQuery) || 
-                 email.includes(searchQuery) || 
-                 addr.includes(searchQuery) || 
-                 itemsText.includes(searchQuery);
+          return num.includes(searchQuery) ||
+            name.includes(searchQuery) ||
+            phone.includes(searchQuery) ||
+            email.includes(searchQuery) ||
+            addr.includes(searchQuery) ||
+            itemsText.includes(searchQuery);
         });
       }
 
@@ -507,7 +630,7 @@
         const orderNum = o.order_number || 'UR-ORDER';
         const dateStr = formatDateTime(o.created_at);
         const payStatus = (o.payment_status || '').toUpperCase();
-        
+
         let paymentBadge = '';
         if (payStatus === 'PAID') {
           paymentBadge = `<span class="badge-paid" style="background:#15803d;color:#ffffff;padding:3px 7px;font-size:0.68rem;border-radius:4px;font-weight:800;letter-spacing:0.5px;display:inline-block;">PAID ONLINE ✓</span>`;
@@ -534,7 +657,7 @@
         // WhatsApp direct link with smart context
         const isCancelled = (payStatus === 'FAILED' || o.order_status === 'CANCELLED');
         const cleanPhone = sanitizePhoneForWhatsApp(o.customer_phone);
-        const waMsg = isCancelled 
+        const waMsg = isCancelled
           ? `Hello ${o.customer_name || 'Customer'}! We noticed your Urban Rich order attempt #${orderNum} for ₹${o.total_amount} was not completed. Would you like any help with completing your purchase?`
           : `Hello ${o.customer_name || 'Customer'}! Regarding your Urban Rich order #${orderNum} for ₹${o.total_amount}. We are reviewing your order for shipment. Thank you!`;
         const waLink = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(waMsg)}`;
@@ -546,13 +669,13 @@
           itemsHtml = `
             <div class="order-products-stack">
               ${items.map(item => {
-                const img = item.image_url || 'images/logo.jpg';
-                const size = item.variant_size || 'Standard';
-                const name = item.product_name || 'Product';
-                const qty = item.quantity || 1;
-                const price = parseFloat(item.unit_price || item.total_price || 0);
+            const img = item.image_url || 'images/logo.jpg';
+            const size = item.variant_size || 'Standard';
+            const name = item.product_name || 'Product';
+            const qty = item.quantity || 1;
+            const price = parseFloat(item.unit_price || item.total_price || 0);
 
-                return `
+            return `
                   <div class="order-product-row">
                     <img src="${img}" alt="${name}" class="order-product-thumb" onerror="this.src='images/logo.jpg'" />
                     <div class="order-product-meta">
@@ -565,7 +688,7 @@
                     </div>
                   </div>
                 `;
-              }).join('')}
+          }).join('')}
             </div>
           `;
         } else {
@@ -1016,10 +1139,11 @@
       currentEditingOrderId = null;
     }
 
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
       loadOrders();
       document.addEventListener('adminSupabaseReady', loadOrders);
     });
   </script>
 </body>
+
 </html>

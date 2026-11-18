@@ -282,18 +282,21 @@
 
           ordersTbody.innerHTML = orders.slice(0, 8).map(o => {
             const dateStr = new Date(o.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
-            const items = o.order_items || [];
+            const items = (o.order_items && o.order_items.length > 0) ? o.order_items : (o.shipping_address?.items_snapshot || []);
             let itemsHtml = '<span style="color:#999; font-size: 0.8rem;">Item snapshot</span>';
             if (items.length > 0) {
               const first = items[0];
               const extraCount = items.length - 1;
+              const img = first.image_url || first.image || 'images/logo.jpg';
+              const name = first.product_name || first.name || 'Product';
+              const size = first.variant_size || first.size || 'M';
               itemsHtml = `
                 <div style="display: flex; align-items: center; gap: 8px;">
-                  <img src="${first.image_url || 'images/logo.jpg'}" style="width: 38px; height: 38px; border-radius: 4px; object-fit: cover; border: 1px solid #ddd;" onerror="this.src='images/logo.jpg'" />
+                  <img src="${img}" style="width: 38px; height: 38px; border-radius: 4px; object-fit: cover; border: 1px solid #ddd;" onerror="this.src='images/logo.jpg'" />
                   <div style="display: flex; flex-direction: column; gap: 2px;">
-                    <div style="font-weight: 800; font-size: 0.82rem; color: #111; max-width: 180px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${first.product_name}</div>
+                    <div style="font-weight: 800; font-size: 0.82rem; color: #111; max-width: 180px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${name}</div>
                     <div style="display: flex; align-items: center; gap: 4px;">
-                      <span class="order-size-badge" style="font-size: 0.65rem; padding: 1px 5px;">SIZE: ${first.variant_size || 'M'}</span>
+                      <span class="order-size-badge" style="font-size: 0.65rem; padding: 1px 5px;">SIZE: ${size}</span>
                       <span style="font-size: 0.72rem; color: #666;">Qty: ${first.quantity || 1}</span>
                       ${extraCount > 0 ? `<span style="font-size: 0.7rem; font-weight: 700; color: #0077b6;">+${extraCount} more</span>` : ''}
                     </div>
@@ -304,7 +307,14 @@
 
             const status = o.order_status || 'PLACED';
             const payStatus = (o.payment_status || '').toUpperCase();
-            const badgeClass = (status === 'CANCELLED' || status === 'PAYMENT_CANCELLED' || payStatus === 'CANCELLED') ? 'badge-cancelled' : `badge-${status.toLowerCase()}`;
+            let statusBadgeHtml = '';
+            if (payStatus === 'PENDING') {
+              statusBadgeHtml = '<span class="status-badge" style="background:#fef3c7;color:#92400e;font-weight:800;font-size:0.7rem;padding:3px 6px;border-radius:3px;">⏳ PENDING</span>';
+            } else if (payStatus === 'FAILED' || status === 'CANCELLED') {
+              statusBadgeHtml = '<span class="status-badge badge-cancelled" style="font-weight:800;font-size:0.7rem;padding:3px 6px;border-radius:3px;">✕ CANCELLED</span>';
+            } else {
+              statusBadgeHtml = `<span class="status-badge badge-${status.toLowerCase()}" style="font-weight:800;font-size:0.7rem;padding:3px 6px;border-radius:3px;">${status}</span>`;
+            }
 
             return `
               <tr>
@@ -318,7 +328,7 @@
                 </td>
                 <td>${itemsHtml}</td>
                 <td><strong>₹${parseFloat(o.total_amount || 0).toFixed(0)}</strong></td>
-                <td><span class="status-badge ${badgeClass}">${payStatus === 'CANCELLED' ? 'CANCELLED' : status}</span></td>
+                <td>${statusBadgeHtml}</td>
                 <td style="text-align: center;">
                   <a href="orders.html" class="btn-admin" style="padding: 4px 8px; font-size: 0.75rem; background: #222;">MANAGE</a>
                 </td>

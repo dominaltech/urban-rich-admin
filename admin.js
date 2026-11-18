@@ -185,6 +185,27 @@
           return { data: [], error: ordersRes.error };
         }
       }
+
+      if (data && Array.isArray(data)) {
+        data = data.map(order => {
+          let items = Array.isArray(order.order_items) && order.order_items.length > 0 ? order.order_items : [];
+          if (items.length === 0 && order.shipping_address && typeof order.shipping_address === 'object' && Array.isArray(order.shipping_address.items_snapshot)) {
+            items = order.shipping_address.items_snapshot.map(i => ({
+              product_name: i.name || 'Product',
+              variant_size: i.size || 'M',
+              quantity: i.quantity || 1,
+              unit_price: parseFloat(i.price || 0),
+              total_price: parseFloat(i.price || 0) * parseInt(i.quantity || 1),
+              image_url: i.image || 'images/logo.jpg'
+            }));
+          }
+          return {
+            ...order,
+            order_items: items
+          };
+        });
+      }
+
       return { data: data || [], error };
     } catch (err) {
       console.error('fetchAdminOrders error:', err);

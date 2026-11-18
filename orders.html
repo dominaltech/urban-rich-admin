@@ -214,17 +214,17 @@
         <span class="order-stat-label">TOTAL ORDERS</span>
         <span class="order-stat-val" id="statTotalOrders">0</span>
       </div>
+      <div class="order-stat-card" style="border-left: 4px solid #b45309;">
+        <span class="order-stat-label">⏳ INCOMPLETE / UNPAID</span>
+        <span class="order-stat-val" id="statPendingOrders" style="color: #b45309;">0</span>
+      </div>
+      <div class="order-stat-card" style="border-left: 4px solid #15803d;">
+        <span class="order-stat-label">✓ PLACED & PAID</span>
+        <span class="order-stat-val" id="statPlacedOrders" style="color: #15803d;">0</span>
+      </div>
       <div class="order-stat-card" style="border-left: 4px solid #1e40af;">
-        <span class="order-stat-label">NEW / PLACED</span>
-        <span class="order-stat-val" id="statPlacedOrders" style="color: #1e40af;">0</span>
-      </div>
-      <div class="order-stat-card" style="border-left: 4px solid #92400e;">
-        <span class="order-stat-label">PROCESSING</span>
-        <span class="order-stat-val" id="statProcessingOrders" style="color: #92400e;">0</span>
-      </div>
-      <div class="order-stat-card" style="border-left: 4px solid #6b21a8;">
-        <span class="order-stat-label">SHIPPED</span>
-        <span class="order-stat-val" id="statShippedOrders" style="color: #6b21a8;">0</span>
+        <span class="order-stat-label">PROCESSING / SHIPPED</span>
+        <span class="order-stat-val" id="statShippedOrders" style="color: #1e40af;">0</span>
       </div>
       <div class="order-stat-card" style="border-left: 4px solid #166534;">
         <span class="order-stat-label">PAID REVENUE</span>
@@ -246,7 +246,8 @@
       <div class="order-filter-chips" id="statusFilterChips">
         <button class="filter-chip-btn active" data-status="ALL" onclick="setStatusFilter('ALL', this)">All Orders
           (<span id="countAll">0</span>)</button>
-        <button class="filter-chip-btn" data-status="PLACED" onclick="setStatusFilter('PLACED', this)">Placed (<span
+        <button class="filter-chip-btn" data-status="PENDING" onclick="setStatusFilter('PENDING', this)" style="border-color: #f59e0b; color: #b45309;">⏳ Incomplete / Unpaid (<span id="countPending">0</span>)</button>
+        <button class="filter-chip-btn" data-status="PLACED" onclick="setStatusFilter('PLACED', this)">✓ Placed &amp; Paid (<span
             id="countPlaced">0</span>)</button>
         <button class="filter-chip-btn" data-status="PROCESSING"
           onclick="setStatusFilter('PROCESSING', this)">Processing (<span id="countProcessing">0</span>)</button>
@@ -255,7 +256,7 @@
         <button class="filter-chip-btn" data-status="DELIVERED" onclick="setStatusFilter('DELIVERED', this)">Delivered
           (<span id="countDelivered">0</span>)</button>
         <button class="filter-chip-btn" data-status="CANCELLED" onclick="setStatusFilter('CANCELLED', this)">Cancelled /
-          Unpaid (<span id="countCancelled">0</span>)</button>
+          Failed (<span id="countCancelled">0</span>)</button>
       </div>
     </div>
 
@@ -534,7 +535,8 @@
 
     function updateMetricsAndFilterCounts() {
       const total = allOrdersData.length;
-      const placed = allOrdersData.filter(o => (o.order_status || 'PLACED') === 'PLACED').length;
+      const pending = allOrdersData.filter(o => o.payment_status === 'PENDING' && o.order_status !== 'CANCELLED').length;
+      const placed = allOrdersData.filter(o => (o.order_status === 'PLACED' && o.payment_status === 'PAID')).length;
       const processing = allOrdersData.filter(o => o.order_status === 'PROCESSING').length;
       const shipped = allOrdersData.filter(o => o.order_status === 'SHIPPED').length;
       const delivered = allOrdersData.filter(o => o.order_status === 'DELIVERED').length;
@@ -553,12 +555,18 @@
       }, 0);
 
       document.getElementById('statTotalOrders').textContent = total;
+      if (document.getElementById('statPendingOrders')) {
+        document.getElementById('statPendingOrders').textContent = pending;
+      }
       document.getElementById('statPlacedOrders').textContent = placed;
       document.getElementById('statProcessingOrders').textContent = processing;
       document.getElementById('statShippedOrders').textContent = shipped;
       document.getElementById('statDeliveredRev').textContent = `₹${totalRevenue.toFixed(2)}`;
 
       document.getElementById('countAll').textContent = total;
+      if (document.getElementById('countPending')) {
+        document.getElementById('countPending').textContent = pending;
+      }
       document.getElementById('countPlaced').textContent = placed;
       document.getElementById('countProcessing').textContent = processing;
       document.getElementById('countShipped').textContent = shipped;
@@ -581,7 +589,12 @@
 
       // Status filter
       if (currentStatusFilter !== 'ALL') {
-        if (currentStatusFilter === 'CANCELLED') {
+        if (currentStatusFilter === 'PENDING') {
+          filtered = filtered.filter(o => o.payment_status === 'PENDING' && o.order_status !== 'CANCELLED');
+        } else if (currentStatusFilter === 'PLACED') {
+          // Placed and paid (ready for fulfillment)
+          filtered = filtered.filter(o => (o.order_status === 'PLACED' && o.payment_status === 'PAID'));
+        } else if (currentStatusFilter === 'CANCELLED') {
           filtered = filtered.filter(o => (
             o.order_status === 'CANCELLED' ||
             o.payment_status === 'FAILED'
@@ -607,8 +620,9 @@
           }
 
           let itemsText = '';
-          if (o.order_items && o.order_items.length > 0) {
-            itemsText = o.order_items.map(i => `${i.product_name || ''} ${i.variant_size || ''}`).join(' ').toLowerCase();
+          const items = (o.order_items && o.order_items.length > 0) ? o.order_items : (o.shipping_address?.items_snapshot || []);
+          if (items.length > 0) {
+            itemsText = items.map(i => `${i.product_name || i.name || ''} ${i.variant_size || i.size || ''}`).join(' ').toLowerCase();
           }
 
           return num.includes(searchQuery) ||
@@ -633,21 +647,23 @@
 
         let paymentBadge = '';
         if (payStatus === 'PAID') {
-          paymentBadge = `<span class="badge-paid" style="background:#15803d;color:#ffffff;padding:3px 7px;font-size:0.68rem;border-radius:4px;font-weight:800;letter-spacing:0.5px;display:inline-block;">PAID ONLINE ✓</span>`;
+          paymentBadge = `<span class="badge-paid" style="background:#15803d;color:#ffffff;padding:4px 8px;font-size:0.7rem;border-radius:4px;font-weight:800;letter-spacing:0.5px;display:inline-block;">PAID ONLINE ✓</span>`;
         } else if (payStatus === 'FAILED' || o.order_status === 'CANCELLED') {
-          paymentBadge = `<span class="badge-cancelled" style="background:#fee2e2;color:#991b1b;border:1px solid #fecaca;padding:3px 7px;font-size:0.68rem;border-radius:4px;font-weight:800;letter-spacing:0.5px;display:inline-block;">PAYMENT CANCELLED ✕</span>`;
+          paymentBadge = `<span class="badge-cancelled" style="background:#fee2e2;color:#991b1b;border:1px solid #fecaca;padding:4px 8px;font-size:0.7rem;border-radius:4px;font-weight:800;letter-spacing:0.5px;display:inline-block;">CANCELLED / FAILED ✕</span>`;
         } else {
-          paymentBadge = `<span class="badge-processing" style="background:#fef3c7;color:#92400e;border:1px solid #fde68a;padding:3px 7px;font-size:0.68rem;border-radius:4px;font-weight:800;letter-spacing:0.5px;display:inline-block;">PAYMENT PENDING ⏳</span>`;
+          paymentBadge = `<span class="badge-processing" style="background:#fef3c7;color:#92400e;border:1px solid #fde68a;padding:4px 8px;font-size:0.7rem;border-radius:4px;font-weight:800;letter-spacing:0.5px;display:inline-block;">⏳ INCOMPLETE (UNPAID)</span>`;
         }
 
         // Format shipping address
         let addressHtml = '-';
         if (typeof o.shipping_address === 'object' && o.shipping_address) {
           const a = o.shipping_address;
+          const couponUsed = a.coupon_code ? `<span style="display:inline-block;margin-top:3px;font-size:0.72rem;background:#e0f2fe;color:#0369a1;padding:2px 6px;border-radius:3px;font-weight:700;">Coupon: ${a.coupon_code}</span>` : '';
           addressHtml = `
             <div style="font-size: 0.85rem; line-height: 1.35; color: #222;">
               <div>${a.address || 'Address provided'}</div>
               <div style="color: #666; font-weight: 600;">${a.city || ''}${a.city && a.state ? ', ' : ''}${a.state || ''} ${a.pincode ? '— ' + a.pincode : ''}</div>
+              ${couponUsed}
             </div>
           `;
         } else if (o.shipping_address) {
@@ -655,15 +671,30 @@
         }
 
         // WhatsApp direct link with smart context
+        const isUnpaid = (payStatus === 'PENDING');
         const isCancelled = (payStatus === 'FAILED' || o.order_status === 'CANCELLED');
         const cleanPhone = sanitizePhoneForWhatsApp(o.customer_phone);
-        const waMsg = isCancelled
-          ? `Hello ${o.customer_name || 'Customer'}! We noticed your Urban Rich order attempt #${orderNum} for ₹${o.total_amount} was not completed. Would you like any help with completing your purchase?`
-          : `Hello ${o.customer_name || 'Customer'}! Regarding your Urban Rich order #${orderNum} for ₹${o.total_amount}. We are reviewing your order for shipment. Thank you!`;
+        let waMsg = '';
+        if (isUnpaid) {
+          waMsg = `Hello ${o.customer_name || 'Customer'}! We saw you started order #${orderNum} for ₹${o.total_amount} at Urban Rich, but payment was not completed. Would you like assistance or a direct link to complete your order?`;
+        } else if (isCancelled) {
+          waMsg = `Hello ${o.customer_name || 'Customer'}! We noticed your Urban Rich order attempt #${orderNum} for ₹${o.total_amount} was cancelled. Would you like help with completing your purchase?`;
+        } else {
+          waMsg = `Hello ${o.customer_name || 'Customer'}! Regarding your Urban Rich order #${orderNum} for ₹${o.total_amount}. We are reviewing your order for shipment. Thank you!`;
+        }
         const waLink = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(waMsg)}`;
 
-        // Format Ordered Items (with images, names & sizes)
-        const items = o.order_items || [];
+        // Format Ordered Items (with images, names & sizes, with embedded snapshot fallback)
+        let items = (o.order_items && o.order_items.length > 0) ? o.order_items : [];
+        if (items.length === 0 && o.shipping_address && typeof o.shipping_address === 'object' && Array.isArray(o.shipping_address.items_snapshot)) {
+          items = o.shipping_address.items_snapshot.map(i => ({
+            product_name: i.name || 'Product',
+            variant_size: i.size || 'M',
+            quantity: i.quantity || 1,
+            unit_price: i.price || 0,
+            image_url: i.image || 'images/logo.jpg'
+          }));
+        }
         let itemsHtml = '';
         if (items.length > 0) {
           itemsHtml = `

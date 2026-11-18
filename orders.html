@@ -222,8 +222,12 @@
         <span class="order-stat-label">✓ PLACED & PAID</span>
         <span class="order-stat-val" id="statPlacedOrders" style="color: #15803d;">0</span>
       </div>
+      <div class="order-stat-card" style="border-left: 4px solid #92400e;">
+        <span class="order-stat-label">PROCESSING</span>
+        <span class="order-stat-val" id="statProcessingOrders" style="color: #92400e;">0</span>
+      </div>
       <div class="order-stat-card" style="border-left: 4px solid #1e40af;">
-        <span class="order-stat-label">PROCESSING / SHIPPED</span>
+        <span class="order-stat-label">SHIPPED</span>
         <span class="order-stat-val" id="statShippedOrders" style="color: #1e40af;">0</span>
       </div>
       <div class="order-stat-card" style="border-left: 4px solid #166534;">
@@ -514,13 +518,17 @@
 
     async function loadOrders() {
       const tbody = document.getElementById('ordersBody');
-      tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px; color: #888;">Fetching customer orders from Supabase...</td></tr>';
+      if (tbody) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px; color: #888;">Fetching customer orders from Supabase...</td></tr>';
+      }
 
       try {
         const { data: orders, error } = await window.fetchAdminOrders();
         if (error) {
           console.error('Fetch orders error:', error);
-          tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: #d90429; padding: 30px;">Error loading orders: ${error.message || 'Check database connection'}</td></tr>`;
+          if (tbody) {
+            tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: #d90429; padding: 30px;">Error loading orders: ${error.message || 'Check database connection'}</td></tr>`;
+          }
           return;
         }
 
@@ -529,11 +537,19 @@
         filterAndRenderOrders();
       } catch (e) {
         console.error('Load orders exception:', e);
-        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #d90429; padding: 30px;">Failed to load orders.</td></tr>';
+        if (tbody) {
+          tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: #d90429; padding: 30px;">Failed to load orders: ${e.message || e}</td></tr>`;
+        }
       }
     }
 
+    function setSafeText(id, val) {
+      const el = document.getElementById(id);
+      if (el) el.textContent = val;
+    }
+
     function updateMetricsAndFilterCounts() {
+      if (!Array.isArray(allOrdersData)) allOrdersData = [];
       const total = allOrdersData.length;
       const pending = allOrdersData.filter(o => o.payment_status === 'PENDING' && o.order_status !== 'CANCELLED').length;
       const placed = allOrdersData.filter(o => (o.order_status === 'PLACED' && o.payment_status === 'PAID')).length;
@@ -554,24 +570,20 @@
         return sum;
       }, 0);
 
-      document.getElementById('statTotalOrders').textContent = total;
-      if (document.getElementById('statPendingOrders')) {
-        document.getElementById('statPendingOrders').textContent = pending;
-      }
-      document.getElementById('statPlacedOrders').textContent = placed;
-      document.getElementById('statProcessingOrders').textContent = processing;
-      document.getElementById('statShippedOrders').textContent = shipped;
-      document.getElementById('statDeliveredRev').textContent = `₹${totalRevenue.toFixed(2)}`;
+      setSafeText('statTotalOrders', total);
+      setSafeText('statPendingOrders', pending);
+      setSafeText('statPlacedOrders', placed);
+      setSafeText('statProcessingOrders', processing);
+      setSafeText('statShippedOrders', shipped);
+      setSafeText('statDeliveredRev', `₹${totalRevenue.toFixed(2)}`);
 
-      document.getElementById('countAll').textContent = total;
-      if (document.getElementById('countPending')) {
-        document.getElementById('countPending').textContent = pending;
-      }
-      document.getElementById('countPlaced').textContent = placed;
-      document.getElementById('countProcessing').textContent = processing;
-      document.getElementById('countShipped').textContent = shipped;
-      document.getElementById('countDelivered').textContent = delivered;
-      document.getElementById('countCancelled').textContent = cancelled;
+      setSafeText('countAll', total);
+      setSafeText('countPending', pending);
+      setSafeText('countPlaced', placed);
+      setSafeText('countProcessing', processing);
+      setSafeText('countShipped', shipped);
+      setSafeText('countDelivered', delivered);
+      setSafeText('countCancelled', cancelled);
     }
 
     function setStatusFilter(status, btn) {
@@ -766,7 +778,7 @@
               <div style="font-size: 1.05rem; font-weight: 900; color: #111;">₹${parseFloat(o.total_amount || 0).toFixed(2)}</div>
               <div style="font-size: 0.72rem; color: #666; margin-top: 2px;">
                 Subtotal: ₹${parseFloat(o.subtotal || o.total_amount || 0).toFixed(0)}<br>
-                ${parseFloat(o.discount_amount || 0) > 0 ? `<span style="color: #166534; font-weight:700;">Coupon (RAKHI5): -₹${parseFloat(o.discount_amount).toFixed(0)}</span><br>` : ''}
+                ${parseFloat(o.discount_amount || 0) > 0 ? `<span style="color: #166534; font-weight:700;">Coupon (${o.coupon_code || (o.shipping_address && o.shipping_address.coupon_code) || 'APPLIED'}): -₹${parseFloat(o.discount_amount).toFixed(0)}</span><br>` : ''}
                 Shipping: ${parseFloat(o.shipping_fee || 0) === 0 ? 'FREE' : '₹' + parseFloat(o.shipping_fee).toFixed(0)}
               </div>
             </td>
@@ -910,7 +922,17 @@
         : `Hello ${order.customer_name || 'Customer'}, here is an update on your Urban Rich order #${order.order_number}...`;
       const waLink = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(waMsg)}`;
 
-      const items = order.order_items || [];
+      let items = (order.order_items && Array.isArray(order.order_items) && order.order_items.length > 0) ? order.order_items : [];
+      if (items.length === 0 && order.shipping_address && typeof order.shipping_address === 'object' && Array.isArray(order.shipping_address.items_snapshot)) {
+        items = order.shipping_address.items_snapshot.map(i => ({
+          product_name: i.name || 'Product',
+          variant_size: i.size || 'M',
+          quantity: i.quantity || 1,
+          unit_price: parseFloat(i.price || 0),
+          total_price: (parseFloat(i.price || 0) * parseInt(i.quantity || 1)),
+          image_url: i.image || 'images/logo.jpg'
+        }));
+      }
 
       const bodyHtml = `
         <!-- MODAL TAB NAVIGATION (NO PRINT) -->

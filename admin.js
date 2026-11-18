@@ -155,7 +155,15 @@
 
   // 7. FETCH ADMIN ORDERS ROUTINE WITH ORDER ITEMS (PRODUCTS & SIZES)
   window.fetchAdminOrders = async function() {
-    const client = window.urSbClient || window.adminSupabase || createAdminSupabaseClient();
+    let client = window.urSbClient || window.adminSupabase || createAdminSupabaseClient();
+    if (!client) {
+      // Retry up to 30 times (3 seconds) in case supabase CDN script is loading
+      for (let i = 0; i < 30; i++) {
+        await new Promise(r => setTimeout(r, 100));
+        client = window.urSbClient || window.adminSupabase || createAdminSupabaseClient();
+        if (client) break;
+      }
+    }
     if (!client) {
       return { data: [], error: { message: 'Supabase client not initialized' } };
     }
